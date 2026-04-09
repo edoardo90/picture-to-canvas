@@ -24,3 +24,9 @@ Specs live in `docs/specs/`. If a spec doesn't exist, use the `requirements` age
 - Decision log: `docs/decisions/README.md`
 - Workflow rules: `.github/instructions/spec-first-workflow.instructions.md`
 - UI & interaction rules: `.github/instructions/ui-guidelines.instructions.md`
+- **Vision (brainstorming only):** `docs/vision.md`
+- **Epic backlog (brainstorming only):** `docs/epics/README.md`
+
+## Vision & Epics
+
+`docs/vision.md` and `docs/epics/` are **out of scope for all agents** (`requirements`, `developer`, `reviewer`, `docs-updater`). They exist only for the user's own planning and brainstorming. Agents must not read, reference, or modify these files.
