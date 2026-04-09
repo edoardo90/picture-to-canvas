@@ -17,7 +17,7 @@ Speed is the primary NFR for both unit and e2e tests. A slow test suite is a tes
 
 ## E2E Tests
 
-- Cover only critical user paths (the happy paths that represent core user value)
+- At the end of every feature spec, identify one or more critical user flows that must work for the feature to be considered complete. These become your e2e test cases.
 - Do not use e2e to test edge cases or error responses — that is unit test territory
 - Keep the e2e suite small enough to run in CI on every PR without slowing the pipeline
 

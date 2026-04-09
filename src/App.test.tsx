@@ -112,3 +112,81 @@ test('does not display an image when a non-image file is selected', () => {
   selectFile(getFileInput(), file)
   expect(screen.queryByRole('img')).not.toBeInTheDocument()
 })
+
+// E-2 AC-1: paper size selector is visible before an image is loaded
+test('shows paper size selector before an image is loaded', () => {
+  render(<App />)
+  expect(screen.getByRole('combobox', { name: 'Paper size' })).toBeInTheDocument()
+})
+
+// E-2 AC-1: paper size selector remains visible after an image is loaded
+test('shows paper size selector after an image is loaded', () => {
+  render(<App />)
+  selectFile(getFileInput(), new File(['content'], 'photo.jpg', { type: 'image/jpeg' }))
+  expect(screen.getByRole('combobox', { name: 'Paper size' })).toBeInTheDocument()
+})
+
+// E-2 AC-2: no preset is selected on initial render
+test('paper size selector shows placeholder on initial render', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' }) as HTMLSelectElement
+  expect(select.value).toBe('')
+})
+
+// E-2 AC-3: all three preset options are present
+test('paper size selector offers all three preset options', () => {
+  render(<App />)
+  expect(screen.getByRole('option', { name: 'A4' })).toBeInTheDocument()
+  expect(screen.getByRole('option', { name: 'A5' })).toBeInTheDocument()
+  expect(screen.getByRole('option', { name: '18 × 26 cm' })).toBeInTheDocument()
+})
+
+// E-2 AC-3: selecting a preset records the correct value
+test('selecting A4 preset updates the selector value', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'a4' } })
+  expect((select as HTMLSelectElement).value).toBe('a4')
+})
+
+// E-2 AC-3: selecting a preset stores the correct dimensions in state
+test('selecting A4 stores widthCm=21 and heightCm=29.7', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'a4' } })
+  expect(select).toHaveAttribute('data-paper-width', '21')
+  expect(select).toHaveAttribute('data-paper-height', '29.7')
+})
+
+test('selecting A5 stores widthCm=14.8 and heightCm=21', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'a5' } })
+  expect(select).toHaveAttribute('data-paper-width', '14.8')
+  expect(select).toHaveAttribute('data-paper-height', '21')
+})
+
+test('selecting 18×26 stores widthCm=18 and heightCm=26', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: '18x26' } })
+  expect(select).toHaveAttribute('data-paper-width', '18')
+  expect(select).toHaveAttribute('data-paper-height', '26')
+})
+
+// handlePaperSizeChange unknown-id guard: unrecognised value leaves state null
+test('selecting an unknown preset id clears the stored dimensions', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'a4' } })
+  fireEvent.change(select, { target: { value: 'unknown-id' } })
+  expect(select).toHaveAttribute('data-paper-width', '')
+  expect(select).toHaveAttribute('data-paper-height', '')
+})
+
+// E-2 AC-5: selector is a native <select> element for built-in keyboard support
+test('paper size selector is a native select element', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  expect(select.tagName).toBe('SELECT')
+})

@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
+import { PAPER_PRESETS, type PaperSize } from './paperPresets'
+
 
 function App() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [paperSize, setPaperSize] = useState<PaperSize | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -15,6 +18,11 @@ function App() {
 
   function handleLoadPictureClick() {
     fileInputRef.current?.click()
+  }
+
+  function handlePaperSizeChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    const preset = PAPER_PRESETS.find(p => p.id === event.target.value) ?? null
+    setPaperSize(preset)
   }
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -46,6 +54,25 @@ function App() {
         >
           Load picture
         </button>
+
+        <label htmlFor="paper-size-select" className="app__paper-size-label">
+          Paper size
+        </label>
+        <select
+          id="paper-size-select"
+          className="app__paper-size-select"
+          value={paperSize?.id ?? ''}
+          onChange={handlePaperSizeChange}
+          data-paper-width={paperSize?.widthCm ?? ''}
+          data-paper-height={paperSize?.heightCm ?? ''}
+        >
+          <option value="" disabled>Select size</option>
+          {PAPER_PRESETS.map(preset => (
+            <option key={preset.id} value={preset.id}>
+              {preset.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="app__display-area">

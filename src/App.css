@@ -76,3 +76,29 @@
   outline: 3px solid #fff;
   outline-offset: 2px;
 }
+
+.app__paper-size-label {
+  font-size: 0.875rem;
+  color: #aaa;
+  white-space: nowrap;
+}
+
+.app__paper-size-select {
+  min-height: 44px;
+  padding: 0 0.75rem;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.app__paper-size-select:hover {
+  border-color: #666;
+}
+
+.app__paper-size-select:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
