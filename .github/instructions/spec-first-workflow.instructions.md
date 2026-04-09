@@ -43,6 +43,12 @@ A feature is done when the **orchestrator** (you) confirms all of the following:
 
 Only after this confirmation should the orchestrator invoke `@docs-updater`.
 
+## Orchestrator Agent
+
+The `orchestrator` agent runs this entire pipeline automatically, pausing at every human gate.
+All individual agents remain directly invocable — the orchestrator is a convenience layer, not a replacement.
+See `.github/agents/orchestrator.agent.md` for the full pipeline definition.
+
 ## Keeping Context Small
 
 - **Max 5 AC per spec.** If a feature needs more, split it into two specs.

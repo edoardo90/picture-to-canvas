@@ -11,6 +11,7 @@ Specs live in `docs/specs/`. If a spec doesn't exist, use the `requirements` age
 
 | Agent | When to invoke | Writes code? | Writes specs? |
 |-------|----------------|--------------|---------------|
+| `orchestrator` | Run the full pipeline end-to-end | No | No — delegates |
 | `requirements` | New feature or change request | No | Yes — creates |
 | `developer` | Spec exists with status `approved` | Yes | No |
 | `reviewer` | Code is written | No | No |
@@ -22,3 +23,4 @@ Specs live in `docs/specs/`. If a spec doesn't exist, use the `requirements` age
 - Spec template: `docs/specs/_template.md`
 - Decision log: `docs/decisions/README.md`
 - Workflow rules: `.github/instructions/spec-first-workflow.instructions.md`
+- UI & interaction rules: `.github/instructions/ui-guidelines.instructions.md`
