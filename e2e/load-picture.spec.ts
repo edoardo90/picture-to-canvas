@@ -54,3 +54,9 @@ test('replacing the image with another file updates the display', async ({ page 
   expect(firstSrc).toMatch(/^blob:/)
   expect(secondSrc).toMatch(/^blob:/)
 })
+
+// default paper size: 18 × 26 cm is selected on first load
+test('paper size defaults to 18 × 26 cm on startup', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('#paper-size-select')).toHaveValue('18x26')
+})

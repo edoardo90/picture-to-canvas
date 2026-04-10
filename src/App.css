@@ -60,6 +60,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 1rem;
+  flex-wrap: wrap;
   transform-origin: top center;
 }
 
@@ -212,7 +213,6 @@
 }
 
 .app__point-marker {
-  fill: rgba(255, 255, 255, 0.9);
   stroke: rgba(0, 0, 0, 0.55);
   stroke-width: 1;
 }
@@ -225,11 +225,84 @@
 }
 
 .app__point-label {
-  font-size: 11px;
   font-family: monospace;
   fill: #fff;
   paint-order: stroke;
   stroke: rgba(0, 0, 0, 0.8);
   stroke-width: 3px;
   stroke-linejoin: round;
+}
+
+/* ── Point style controls ── */
+
+.app__style-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.app__style-section-label {
+  font-size: 0.75rem;
+  color: #777;
+  white-space: nowrap;
+  padding: 0 0.25rem;
+  border-left: 1px solid #444;
+}
+
+.app__style-section-label:first-child {
+  border-left: none;
+}
+
+.app__style-field {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.app__style-label {
+  font-size: 0.75rem;
+  color: #aaa;
+  white-space: nowrap;
+}
+
+.app__style-number-input {
+  width: 60px;
+  min-height: 44px;
+  padding: 0 0.25rem;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.app__style-number-input:hover {
+  border-color: #666;
+}
+
+.app__style-number-input:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+.app__style-color-input {
+  width: 44px;
+  min-height: 44px;
+  padding: 2px;
+  background: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.app__style-color-input:hover {
+  border-color: #666;
+}
+
+.app__style-color-input:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
 }

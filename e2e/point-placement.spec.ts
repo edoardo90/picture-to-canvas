@@ -80,10 +80,11 @@ test('tabbing to a point selects it', async ({ page }) => {
   await expect(page.locator('.app__point-group')).toHaveCount(1)
 
   await page.focus('#paper-size-select')
-  // Tab past the hide-toolbar toggle button and the resize handle, then onto the first point
-  await page.keyboard.press('Tab')
-  await page.keyboard.press('Tab')
-  await page.keyboard.press('Tab')
+  // Tab through the 8 style controls, the hide-toolbar toggle button, the resize handle,
+  // then onto the first point group
+  for (let i = 0; i < 11; i++) {
+    await page.keyboard.press('Tab')
+  }
   await expect(page.locator('.app__point-group--selected')).toHaveCount(1)
 })
 

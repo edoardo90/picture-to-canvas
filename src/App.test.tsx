@@ -126,11 +126,11 @@ test('shows paper size selector after an image is loaded', () => {
   expect(screen.getByRole('combobox', { name: 'Paper size' })).toBeInTheDocument()
 })
 
-// E-2 AC-2: no preset is selected on initial render
-test('paper size selector shows placeholder on initial render', () => {
+// default paper size is 18 × 26 cm on initial render
+test('paper size selector shows 18 × 26 cm as default on initial render', () => {
   render(<App />)
   const select = screen.getByRole('combobox', { name: 'Paper size' }) as HTMLSelectElement
-  expect(select.value).toBe('')
+  expect(select.value).toBe('18x26')
 })
 
 // E-2 AC-3: all three preset options are present
