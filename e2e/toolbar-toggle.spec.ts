@@ -135,3 +135,47 @@ test('FAB can be activated with the keyboard', async ({ page }) => {
 
   await expect(page.getByRole('button', { name: 'Load picture' })).toBeVisible()
 })
+
+// Layout: all toolbar controls are on the same horizontal row (no vertical stacking)
+test('toolbar controls are laid out horizontally on a single row', async ({ page }) => {
+  await page.goto('/')
+
+  const load = page.getByRole('button', { name: 'Load picture' })
+  const style = page.getByRole('button', { name: 'Points Style' })
+  const hide = page.getByRole('button', { name: 'Hide toolbar' })
+  const select = page.locator('#paper-size-select')
+
+  const [loadBox, styleBox, hideBox, selectBox] = await Promise.all([
+    load.boundingBox(),
+    style.boundingBox(),
+    hide.boundingBox(),
+    select.boundingBox(),
+  ])
+
+  if (!loadBox || !styleBox || !hideBox || !selectBox) {
+    throw new Error('Could not get bounding boxes for toolbar controls')
+  }
+
+  const centerY = (box: { y: number; height: number }) => box.y + box.height / 2
+
+  // All four controls must have centres within 10 px of each other vertically
+  const ys = [centerY(loadBox), centerY(selectBox), centerY(styleBox), centerY(hideBox)]
+  const minY = Math.min(...ys)
+  const maxY = Math.max(...ys)
+  expect(maxY - minY).toBeLessThan(10)
+
+  // Controls must appear left-to-right in document order
+  expect(loadBox.x).toBeLessThan(selectBox.x)
+  expect(selectBox.x).toBeLessThan(styleBox.x)
+  expect(styleBox.x).toBeLessThan(hideBox.x)
+})
+
+// Visual: toolbar background is semi-transparent (80% opacity)
+test('toolbar has a semi-transparent background', async ({ page }) => {
+  await page.goto('/')
+
+  const bg = await page.locator('.app__toolbar').evaluate(
+    el => window.getComputedStyle(el).backgroundColor
+  )
+  expect(bg).toBe('rgba(34, 34, 34, 0.8)')
+})

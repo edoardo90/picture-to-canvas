@@ -3,6 +3,7 @@ import './App.css'
 import { PAPER_PRESETS, type PaperSize } from './paperPresets'
 import { mapToCanvas, toImageRelative, clampToImageRelative } from './coordinateMapping'
 import { loadPointStyle, savePointStyle, type PointStyleSettings } from './pointStyle'
+import { StylePanel } from './StylePanel'
 
 type PlacedPoint = {
   id: string
@@ -56,10 +57,12 @@ function App() {
   const [toolbarHeight, setToolbarHeight] = useState<number | null>(null)
   const [dragHeight, setDragHeight] = useState<number | null>(null)
   const [pointStyle, setPointStyle] = useState<PointStyleSettings>(loadPointStyle)
+  const [isStylePanelOpen, setIsStylePanelOpen] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
   const toolbarRef = useRef<HTMLDivElement>(null)
+  const styleButtonRef = useRef<HTMLButtonElement>(null)
   const dragStartRef = useRef<{ startY: number; startHeight: number } | null>(null)
   const naturalToolbarHeightRef = useRef<number | null>(null)
 
@@ -121,6 +124,11 @@ function App() {
 
   function updatePointStyle(partial: Partial<PointStyleSettings>) {
     setPointStyle(prev => ({ ...prev, ...partial }))
+  }
+
+  function closeStylePanel() {
+    setIsStylePanelOpen(false)
+    styleButtonRef.current?.focus()
   }
 
   function handleLoadPictureClick() {
@@ -301,104 +309,16 @@ function App() {
               ))}
             </select>
 
-            <div className="app__style-controls" role="group" aria-label="Point style">
-              <span className="app__style-section-label">Point</span>
-              <div className="app__style-field">
-                <label htmlFor="style-point-colour" className="app__style-label">Colour</label>
-                <input
-                  type="color"
-                  id="style-point-colour"
-                  className="app__style-color-input"
-                  value={pointStyle.pointColour}
-                  onChange={e => updatePointStyle({ pointColour: e.target.value })}
-                />
-              </div>
-              <div className="app__style-field">
-                <label htmlFor="style-point-radius" className="app__style-label">Radius</label>
-                <input
-                  type="number"
-                  id="style-point-radius"
-                  className="app__style-number-input"
-                  value={pointStyle.pointRadius}
-                  min={2}
-                  max={20}
-                  onChange={e => updatePointStyle({ pointRadius: Math.min(20, Math.max(2, Number(e.target.value))) })}
-                />
-              </div>
-              <div className="app__style-field">
-                <label htmlFor="style-point-opacity" className="app__style-label">Point opacity %</label>
-                <input
-                  type="number"
-                  id="style-point-opacity"
-                  className="app__style-number-input"
-                  value={Math.round(pointStyle.pointOpacity * 100)}
-                  min={0}
-                  max={100}
-                  onChange={e => updatePointStyle({ pointOpacity: Math.min(1, Math.max(0, Number(e.target.value) / 100)) })}
-                />
-              </div>
-              <span className="app__style-section-label">Label</span>
-              <div className="app__style-field">
-                <label htmlFor="style-label-font-size" className="app__style-label">Size</label>
-                <input
-                  type="number"
-                  id="style-label-font-size"
-                  className="app__style-number-input"
-                  value={pointStyle.labelFontSize}
-                  min={8}
-                  max={32}
-                  onChange={e => updatePointStyle({ labelFontSize: Math.min(32, Math.max(8, Number(e.target.value))) })}
-                />
-              </div>
-              <div className="app__style-field">
-                <label htmlFor="style-label-opacity" className="app__style-label">Label opacity %</label>
-                <input
-                  type="number"
-                  id="style-label-opacity"
-                  className="app__style-number-input"
-                  value={Math.round(pointStyle.labelOpacity * 100)}
-                  min={0}
-                  max={100}
-                  onChange={e => updatePointStyle({ labelOpacity: Math.min(1, Math.max(0, Number(e.target.value) / 100)) })}
-                />
-              </div>
-              <div className="app__style-field">
-                <label htmlFor="style-label-offset-dx" className="app__style-label">Offset X</label>
-                <input
-                  type="number"
-                  id="style-label-offset-dx"
-                  className="app__style-number-input"
-                  value={pointStyle.labelOffsetDx}
-                  min={0}
-                  max={40}
-                  onChange={e => updatePointStyle({ labelOffsetDx: Math.min(40, Math.max(0, Number(e.target.value))) })}
-                />
-              </div>
-              <div className="app__style-field">
-                <label htmlFor="style-label-offset-dy" className="app__style-label">Offset Y</label>
-                <input
-                  type="number"
-                  id="style-label-offset-dy"
-                  className="app__style-number-input"
-                  value={pointStyle.labelOffsetDy}
-                  min={-40}
-                  max={0}
-                  onChange={e => updatePointStyle({ labelOffsetDy: Math.min(0, Math.max(-40, Number(e.target.value))) })}
-                />
-              </div>
-              <div className="app__style-field">
-                <label htmlFor="style-label-coord-gap" className="app__style-label">Gap</label>
-                <input
-                  type="number"
-                  id="style-label-coord-gap"
-                  className="app__style-number-input"
-                  value={pointStyle.labelCoordinateGap}
-                  min={0}
-                  max={40}
-                  onChange={e => updatePointStyle({ labelCoordinateGap: Math.min(40, Math.max(0, Number(e.target.value))) })}
-                />
-              </div>
-            </div>
+            <button
+              ref={styleButtonRef}
+              type="button"
+              className="app__style-button"
+              aria-expanded={isStylePanelOpen}
+              aria-controls="style-panel"
+              onClick={() => setIsStylePanelOpen(prev => !prev)}
+            >
+              Points Style
+            </button>
 
             <button
               type="button"
@@ -437,6 +357,20 @@ function App() {
             <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
+      )}
+
+      {isStylePanelOpen && (
+        <StylePanel
+          pointStyle={pointStyle}
+          onUpdate={updatePointStyle}
+          onClose={closeStylePanel}
+          styleButtonRef={styleButtonRef}
+          topOffset={
+            toolbarRef.current
+              ? toolbarRef.current.getBoundingClientRect().bottom
+              : naturalToolbarHeightRef.current ?? 56
+          }
+        />
       )}
 
       <div className="app__display-area">

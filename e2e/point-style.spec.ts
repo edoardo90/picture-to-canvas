@@ -19,9 +19,15 @@ async function placeOnePoint(page: Page) {
   await expect(page.locator('.app__point-group')).toHaveCount(1)
 }
 
-// AC-1: all seven style controls are present and labelled in the toolbar
-test('all seven style controls are visible in the toolbar', async ({ page }) => {
+async function openStylePanel(page: Page) {
+  await page.getByRole('button', { name: 'Points Style' }).click()
+  await expect(page.getByRole('dialog', { name: 'Point style' })).toBeVisible()
+}
+
+// AC-1: all seven style controls are present and labelled in the style panel
+test('all seven style controls are visible in the style panel', async ({ page }) => {
   await page.goto('/')
+  await openStylePanel(page)
   await expect(page.locator('#style-point-colour')).toBeVisible()
   await expect(page.locator('#style-point-radius')).toBeVisible()
   await expect(page.locator('#style-point-opacity')).toBeVisible()
@@ -36,6 +42,7 @@ test('all seven style controls are visible in the toolbar', async ({ page }) => 
 test('changing point radius immediately updates rendered markers', async ({ page }) => {
   await loadImageAndSelectPaper(page)
   await placeOnePoint(page)
+  await openStylePanel(page)
 
   await page.fill('#style-point-radius', '12')
 
@@ -47,6 +54,7 @@ test('changing point radius immediately updates rendered markers', async ({ page
 test('setting point opacity to 0 makes markers invisible', async ({ page }) => {
   await loadImageAndSelectPaper(page)
   await placeOnePoint(page)
+  await openStylePanel(page)
 
   await page.fill('#style-point-opacity', '0')
 
@@ -60,6 +68,7 @@ test('setting point opacity to 0 makes markers invisible', async ({ page }) => {
 test('setting label opacity to 0 makes labels invisible', async ({ page }) => {
   await loadImageAndSelectPaper(page)
   await placeOnePoint(page)
+  await openStylePanel(page)
 
   await page.fill('#style-label-opacity', '0')
 
@@ -72,9 +81,10 @@ test('setting label opacity to 0 makes labels invisible', async ({ page }) => {
 // AC-8: style settings persist across page reload
 test('style settings are restored after page reload', async ({ page }) => {
   await page.goto('/')
-
+  await openStylePanel(page)
   await page.fill('#style-point-radius', '15')
   await page.reload()
+  await openStylePanel(page)
 
   await expect(page.locator('#style-point-radius')).toHaveValue('15')
 })
@@ -82,6 +92,7 @@ test('style settings are restored after page reload', async ({ page }) => {
 // AC-8: default values match expected appearance on fresh load
 test('default values match expected appearance', async ({ page }) => {
   await page.goto('/')
+  await openStylePanel(page)
 
   await expect(page.locator('#style-point-radius')).toHaveValue('4')
   await expect(page.locator('#style-point-opacity')).toHaveValue('90')
@@ -93,6 +104,7 @@ test('default values match expected appearance', async ({ page }) => {
 test('changing point colour immediately updates marker fill', async ({ page }) => {
   await loadImageAndSelectPaper(page)
   await placeOnePoint(page)
+  await openStylePanel(page)
 
   await page.locator('#style-point-colour').evaluate(
     (el: HTMLInputElement, color) => {
@@ -115,6 +127,7 @@ test('changing point colour immediately updates marker fill', async ({ page }) =
 test('changing label font size immediately updates label font size', async ({ page }) => {
   await loadImageAndSelectPaper(page)
   await placeOnePoint(page)
+  await openStylePanel(page)
 
   await page.fill('#style-label-font-size', '20')
 
@@ -151,6 +164,7 @@ test('label position matches configured offset from marker centre', async ({ pag
 test('second tspan dx attribute matches configured coordinate gap', async ({ page }) => {
   await loadImageAndSelectPaper(page)
   await placeOnePoint(page)
+  await openStylePanel(page)
 
   await page.fill('#style-label-coord-gap', '15')
 
@@ -186,10 +200,11 @@ test('label does not overlap the point marker with default offsets', async ({ pa
 // AC-8: multiple style properties persist across page reload
 test('label font size and offset persist across page reload', async ({ page }) => {
   await page.goto('/')
-
+  await openStylePanel(page)
   await page.fill('#style-label-font-size', '20')
   await page.fill('#style-label-offset-dx', '25')
   await page.reload()
+  await openStylePanel(page)
 
   await expect(page.locator('#style-label-font-size')).toHaveValue('20')
   await expect(page.locator('#style-label-offset-dx')).toHaveValue('25')
