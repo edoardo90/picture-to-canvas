@@ -50,17 +50,22 @@
 
 .app__toolbar {
   position: relative;
+  background: #222;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.app__toolbar-content {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 1rem;
-  background: #222;
-  flex-shrink: 0;
+  transform-origin: top center;
 }
 
 .app__toolbar-resize-handle {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 8px;

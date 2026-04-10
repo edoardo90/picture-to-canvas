@@ -16,7 +16,7 @@ type ContentLayout = {
   height: number
 }
 
-const MIN_TOOLBAR_HEIGHT = 60 // px — enough to show all controls without clipping
+const MIN_TOOLBAR_HEIGHT = 36 // px — minimum readable size before collapse
 
 function computeContentLayout(img: HTMLImageElement): ContentLayout | null {
   const { naturalWidth, naturalHeight } = img
@@ -57,6 +57,7 @@ function App() {
   const imageRef = useRef<HTMLImageElement>(null)
   const toolbarRef = useRef<HTMLDivElement>(null)
   const dragStartRef = useRef<{ startY: number; startHeight: number } | null>(null)
+  const naturalToolbarHeightRef = useRef<number | null>(null)
 
   useEffect(() => {
     return () => {
@@ -103,6 +104,12 @@ function App() {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [selectedId])
+
+  useEffect(() => {
+    if (toolbarRef.current && naturalToolbarHeightRef.current === null) {
+      naturalToolbarHeightRef.current = toolbarRef.current.offsetHeight
+    }
+  }, [])
 
   function handleLoadPictureClick() {
     fileInputRef.current?.click()
@@ -183,17 +190,19 @@ function App() {
 
   function handleResizeHandlePointerMove(e: React.PointerEvent) {
     if (!dragStartRef.current) return
-    // Handle is at the top edge: dragging up (clientY decreases) expands the toolbar
-    const delta = dragStartRef.current.startY - e.clientY
-    const newHeight = Math.max(MIN_TOOLBAR_HEIGHT, dragStartRef.current.startHeight + delta)
+    // Handle is at the bottom edge: dragging down expands, dragging up shrinks
+    const delta = e.clientY - dragStartRef.current.startY
+    const maxHeight = naturalToolbarHeightRef.current ?? dragStartRef.current.startHeight
+    const newHeight = Math.min(maxHeight, Math.max(MIN_TOOLBAR_HEIGHT, dragStartRef.current.startHeight + delta))
     setDragHeight(newHeight)
   }
 
   function handleResizeHandlePointerUp(e: React.PointerEvent) {
     if (!dragStartRef.current) return
-    const delta = dragStartRef.current.startY - e.clientY
+    const delta = e.clientY - dragStartRef.current.startY
     const newHeight = dragStartRef.current.startHeight + delta
     const previousHeight = dragStartRef.current.startHeight
+    const maxHeight = naturalToolbarHeightRef.current ?? previousHeight
     dragStartRef.current = null
     setDragHeight(null)
     if (newHeight < MIN_TOOLBAR_HEIGHT) {
@@ -201,17 +210,20 @@ function App() {
       setToolbarHeight(previousHeight)
       setIsToolbarCollapsed(true)
     } else {
-      setToolbarHeight(newHeight)
+      setToolbarHeight(Math.min(maxHeight, newHeight))
     }
   }
 
   function handleResizeHandleKeyDown(e: React.KeyboardEvent) {
     const currentHeight = toolbarRef.current?.offsetHeight ?? (toolbarHeight ?? MIN_TOOLBAR_HEIGHT)
-    const STEP = 20
-    if (e.key === 'ArrowUp') {
+    const maxHeight = naturalToolbarHeightRef.current ?? currentHeight
+    const STEP = 8
+    if (e.key === 'ArrowDown') {
+      // ArrowDown: expand (pull handle down)
       e.preventDefault()
-      setToolbarHeight(currentHeight + STEP)
-    } else if (e.key === 'ArrowDown') {
+      setToolbarHeight(Math.min(maxHeight, currentHeight + STEP))
+    } else if (e.key === 'ArrowUp') {
+      // ArrowUp: shrink (push handle up)
       e.preventDefault()
       const newHeight = currentHeight - STEP
       if (newHeight < MIN_TOOLBAR_HEIGHT) {
@@ -222,6 +234,11 @@ function App() {
       }
     }
   }
+
+  const effectiveHeight = dragHeight ?? toolbarHeight
+  const contentScale = effectiveHeight !== null && naturalToolbarHeightRef.current !== null
+    ? Math.min(1, effectiveHeight / naturalToolbarHeightRef.current)
+    : 1
 
   return (
     <main className="app">
@@ -239,10 +256,51 @@ function App() {
         <div
           ref={toolbarRef}
           className="app__toolbar"
-          style={dragHeight !== null || toolbarHeight !== null
-            ? { height: dragHeight ?? toolbarHeight ?? undefined, overflow: 'hidden' }
-            : undefined}
+          style={effectiveHeight !== null ? { height: effectiveHeight } : undefined}
         >
+          <div
+            className="app__toolbar-content"
+            style={contentScale < 1 ? { transform: `scale(${contentScale})`, transformOrigin: 'top center' } : undefined}
+          >
+            <button
+              type="button"
+              className="app__load-button"
+              onClick={handleLoadPictureClick}
+            >
+              Load picture
+            </button>
+
+            <label htmlFor="paper-size-select" className="app__paper-size-label">
+              Paper size
+            </label>
+            <select
+              id="paper-size-select"
+              className="app__paper-size-select"
+              value={paperSize?.id ?? ''}
+              onChange={handlePaperSizeChange}
+              data-paper-width={paperSize?.widthCm ?? ''}
+              data-paper-height={paperSize?.heightCm ?? ''}
+            >
+              <option value="" disabled>Select size</option>
+              {PAPER_PRESETS.map(preset => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              className="app__toolbar-toggle"
+              aria-label="Hide toolbar"
+              onClick={() => setIsToolbarCollapsed(true)}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M3 10l5-5 5 5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
+
           <div
             className="app__toolbar-resize-handle"
             aria-label="Resize toolbar"
@@ -254,44 +312,6 @@ function App() {
             onPointerUp={handleResizeHandlePointerUp}
             onKeyDown={handleResizeHandleKeyDown}
           />
-
-          <button
-            type="button"
-            className="app__load-button"
-            onClick={handleLoadPictureClick}
-          >
-            Load picture
-          </button>
-
-          <label htmlFor="paper-size-select" className="app__paper-size-label">
-            Paper size
-          </label>
-          <select
-            id="paper-size-select"
-            className="app__paper-size-select"
-            value={paperSize?.id ?? ''}
-            onChange={handlePaperSizeChange}
-            data-paper-width={paperSize?.widthCm ?? ''}
-            data-paper-height={paperSize?.heightCm ?? ''}
-          >
-            <option value="" disabled>Select size</option>
-            {PAPER_PRESETS.map(preset => (
-              <option key={preset.id} value={preset.id}>
-                {preset.label}
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="button"
-            className="app__toolbar-toggle"
-            aria-label="Hide toolbar"
-            onClick={() => setIsToolbarCollapsed(true)}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-              <path d="M3 10l5-5 5 5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
         </div>
       )}
 

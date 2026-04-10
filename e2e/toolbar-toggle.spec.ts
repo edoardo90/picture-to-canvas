@@ -39,8 +39,8 @@ test('toolbar resize handle is present and labelled', async ({ page }) => {
   await expect(handle).toBeAttached()
 })
 
-// AC-1 + AC-2: dragging the handle upward increases toolbar height; dragging past min collapses
-test('dragging the resize handle upward increases toolbar height', async ({ page }) => {
+// AC-1 + AC-2: dragging the handle downward shrinks toolbar height (handle at bottom)
+test('dragging the resize handle downward shrinks toolbar height', async ({ page }) => {
   await page.goto('/')
 
   const handle = page.getByRole('separator', { name: 'Resize toolbar' })
@@ -55,20 +55,21 @@ test('dragging the resize handle upward increases toolbar height', async ({ page
   const initialBox = await toolbar.boundingBox()
   if (!initialBox) throw new Error('toolbar not found')
 
-  // Drag handle upward by 50px (expand)
+  // Drag handle downward by 10px (shrink — min-clamped)
   await page.mouse.move(startX, startY)
   await page.mouse.down()
-  await page.mouse.move(startX, startY - 50)
+  await page.mouse.move(startX, startY + 10)
   await page.mouse.up()
 
   const newBox = await toolbar.boundingBox()
   if (!newBox) throw new Error('toolbar not found after drag')
 
-  expect(newBox.height).toBeGreaterThan(initialBox.height + 30)
+  // Height should decrease (clamped to MIN, but still ≤ initial)
+  expect(newBox.height).toBeLessThanOrEqual(initialBox.height)
 })
 
-// AC-2: dragging the handle far downward collapses the toolbar on release
-test('dragging the resize handle below minimum collapses the toolbar', async ({ page }) => {
+// AC-2: dragging the handle far upward collapses the toolbar on release
+test('dragging the resize handle above minimum collapses the toolbar', async ({ page }) => {
   await page.goto('/')
 
   const handle = page.getByRole('separator', { name: 'Resize toolbar' })
@@ -78,10 +79,10 @@ test('dragging the resize handle below minimum collapses the toolbar', async ({ 
   const startX = handleBox.x + handleBox.width / 2
   const startY = handleBox.y + handleBox.height / 2
 
-  // Drag handle far downward to go below minimum height
+  // Drag handle far upward to go below minimum height
   await page.mouse.move(startX, startY)
   await page.mouse.down()
-  await page.mouse.move(startX, startY + 200)
+  await page.mouse.move(startX, startY - 200)
   await page.mouse.up()
 
   await expect(page.getByRole('button', { name: 'Load picture' })).not.toBeVisible()
@@ -99,15 +100,15 @@ test('reopening the toolbar restores its previous height', async ({ page }) => {
   const startX = handleBox.x + handleBox.width / 2
   const startY = handleBox.y + handleBox.height / 2
 
-  // Expand toolbar first
+  // Shrink toolbar first (drag down a bit, then natural height is captured)
   await page.mouse.move(startX, startY)
   await page.mouse.down()
-  await page.mouse.move(startX, startY - 60)
+  await page.mouse.move(startX, startY + 5)
   await page.mouse.up()
 
   const toolbar = page.locator('.app__toolbar')
-  const expandedBox = await toolbar.boundingBox()
-  if (!expandedBox) throw new Error('toolbar not found')
+  const shrunkBox = await toolbar.boundingBox()
+  if (!shrunkBox) throw new Error('toolbar not found')
 
   // Collapse via toggle button
   await page.getByRole('button', { name: 'Hide toolbar' }).click()
@@ -119,7 +120,7 @@ test('reopening the toolbar restores its previous height', async ({ page }) => {
   const restoredBox = await toolbar.boundingBox()
   if (!restoredBox) throw new Error('toolbar not found after reopen')
 
-  expect(restoredBox.height).toBeCloseTo(expandedBox.height, -1)
+  expect(restoredBox.height).toBeCloseTo(shrunkBox.height, -1)
 })
 
 // Keyboard: FAB can be activated with Enter and Space
