@@ -49,12 +49,95 @@
 }
 
 .app__toolbar {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 1rem;
   background: #222;
   flex-shrink: 0;
+}
+
+.app__toolbar-resize-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.app__toolbar-resize-handle:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+.app__toolbar-resize-handle::after {
+  content: '';
+  width: 40px;
+  height: 3px;
+  background: #555;
+  border-radius: 2px;
+}
+
+.app__toolbar-resize-handle:hover::after {
+  background: #888;
+}
+
+.app__toolbar-toggle {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.app__toolbar-toggle:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.app__toolbar-toggle:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+.app__toolbar-toggle-fab {
+  position: fixed;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.app__toolbar-toggle-fab:hover {
+  background: #444;
+}
+
+.app__toolbar-toggle-fab:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
 }
 
 .app__load-button {
@@ -144,9 +227,4 @@
   stroke: rgba(0, 0, 0, 0.8);
   stroke-width: 3px;
   stroke-linejoin: round;
-}
-
-.app__paper-size-select:focus-visible {
-  outline: 3px solid #fff;
-  outline-offset: 2px;
 }
