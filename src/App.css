@@ -149,16 +149,23 @@
   min-width: 44px;
   min-height: 44px;
   padding: 0.75rem 1.75rem;
-  background: #0066cc;
-  color: #fff;
-  border: none;
+  background: #4a4a4a;
+  color: #e0e0e0;
+  border: 1px solid #666;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
 }
 
 .app__load-button:hover {
-  background: #0052a3;
+  background: #5a5a5a;
+  border-color: #888;
+  color: #fff;
+}
+
+.app__load-button:active {
+  background: #3a3a3a;
+  border-color: #666;
 }
 
 .app__load-button:focus-visible {
