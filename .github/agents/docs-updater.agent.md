@@ -27,3 +27,16 @@ You are a technical writer with knowledge of the codebase. Your job is to update
 ## Output
 
 Archived spec in `docs/specs/archive/` with status `updated`. A brief summary of what changed and why.
+
+## Handoff
+
+After archiving the spec, use `vscode_askQuestions`:
+
+**Header:** "Feature completata 🎉"
+**Question:** "La spec è archiviata in `docs/specs/archive/`. La feature è chiusa. Cosa vuoi fare?"
+**Options (single-select):**
+- ✅ Tutto fatto — nessuna azione ulteriore
+- 🔁 Qualcosa non va — dimmi cosa sistemare
+
+If the user selects **Tutto fatto**: confirm "Pipeline conclusa. Ricordati di aggiornare lo stato dell'epic in `docs/epics/README.md` se applicabile."
+If the user selects **Qualcosa non va**: wait for instructions and apply the requested corrections.

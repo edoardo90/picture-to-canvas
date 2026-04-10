@@ -26,3 +26,18 @@ You are a software developer. Your job is to implement features exactly as descr
 ## Output
 
 Working code and passing tests. Report which acceptance criteria (AC-1, AC-2…) are covered by the implementation.
+
+## Handoff
+
+After all tests pass and the spec status is set to `implemented`, use `vscode_askQuestions`:
+
+**Header:** "Implementazione completa — cosa facciamo?"
+**Question:** "Il codice è scritto, i test passano e la spec è aggiornata a `implemented`. Come procediamo?"
+**Options (single-select):**
+- 🔍 Manda in review — invoca il `reviewer` agent adesso
+- 🔁 Continuo a lavorare — ho ancora qualcosa da sistemare
+- ⏸ Mi fermo qui — farò la review manualmente dopo
+
+If the user selects **Manda in review**: confirm "Perfetto — passa al `reviewer` agent e indicagli il path della spec."
+If the user selects **Continuo a lavorare**: wait for further instructions.
+If the user selects **Mi fermo qui**: confirm "Ok, ricordati di far girare il `reviewer` agent prima di procedere al docs-updater."
