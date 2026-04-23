@@ -9,8 +9,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "create-fixtures": "node e2e/create-fixtures.mjs",
+    "test:e2e": "node e2e/create-fixtures.mjs && playwright test",
+    "test:e2e:ui": "node e2e/create-fixtures.mjs && playwright test --ui"
   },
   "dependencies": {
     "react": "^18.3.1",
