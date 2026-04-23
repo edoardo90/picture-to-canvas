@@ -143,6 +143,15 @@ function App() {
     styleButtonRef.current?.focus()
   }
 
+  function handleSwapOrientation() {
+    if (!paperSize) return
+    setPaperSize({ ...paperSize, widthCm: paperSize.heightCm, heightCm: paperSize.widthCm })
+    if (selectedSizeId === 'custom') {
+      setCustomWidth(customHeight)
+      setCustomHeight(customWidth)
+    }
+  }
+
   function handleLoadPictureClick() {
     fileInputRef.current?.click()
   }
@@ -365,6 +374,15 @@ function App() {
                   />
                 </span>
               )}
+
+              <button
+                type="button"
+                className="app__swap-button"
+                aria-label="Swap orientation"
+                onClick={handleSwapOrientation}
+              >
+                ⇅
+              </button>
 
               <button
                 ref={styleButtonRef}

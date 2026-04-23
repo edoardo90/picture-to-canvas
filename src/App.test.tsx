@@ -312,3 +312,83 @@ test('pressing Delete while a custom size input is focused does not remove the c
   expect(screen.getByLabelText('W cm')).toBeInTheDocument()
   expect(screen.getByLabelText('H cm')).toBeInTheDocument()
 })
+
+// ── Paper Orientation Swap (paper-orientation-swap.md) ──────────────────────
+
+// AC-1: swap button is rendered in the toolbar with correct aria-label
+test('swap orientation button is rendered in the toolbar', () => {
+  render(<App />)
+  expect(screen.getByRole('button', { name: 'Swap orientation' })).toBeInTheDocument()
+})
+
+// AC-1: swap button is a native <button> element
+test('swap orientation button is a native button element', () => {
+  render(<App />)
+  const button = screen.getByRole('button', { name: 'Swap orientation' })
+  expect(button.tagName).toBe('BUTTON')
+})
+
+// AC-2: clicking swap exchanges widthCm and heightCm for a preset
+test('clicking swap orientation swaps widthCm and heightCm for a preset', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  // Default is 18x26: width=18, height=26
+  expect(select).toHaveAttribute('data-paper-width', '18')
+  expect(select).toHaveAttribute('data-paper-height', '26')
+  fireEvent.click(screen.getByRole('button', { name: 'Swap orientation' }))
+  expect(select).toHaveAttribute('data-paper-width', '26')
+  expect(select).toHaveAttribute('data-paper-height', '18')
+})
+
+// AC-3: swap works for preset sizes (A4 example)
+test('clicking swap orientation swaps A4 dimensions', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'a4' } })
+  // A4 portrait: width=21, height=29.7
+  fireEvent.click(screen.getByRole('button', { name: 'Swap orientation' }))
+  expect(select).toHaveAttribute('data-paper-width', '29.7')
+  expect(select).toHaveAttribute('data-paper-height', '21')
+})
+
+// AC-3: swap works for custom sizes
+test('clicking swap orientation swaps custom width and height values', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  fireEvent.change(screen.getByLabelText('W cm'), { target: { value: '30' } })
+  fireEvent.change(screen.getByLabelText('H cm'), { target: { value: '40' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Swap orientation' }))
+  expect(select).toHaveAttribute('data-paper-width', '40')
+  expect(select).toHaveAttribute('data-paper-height', '30')
+})
+
+// AC-3: custom input fields also reflect the swapped values
+test('custom input fields reflect swapped values after swap', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  fireEvent.change(screen.getByLabelText('W cm'), { target: { value: '30' } })
+  fireEvent.change(screen.getByLabelText('H cm'), { target: { value: '40' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Swap orientation' }))
+  expect(screen.getByLabelText('W cm')).toHaveValue(40)
+  expect(screen.getByLabelText('H cm')).toHaveValue(30)
+})
+
+// AC-4: pressing swap twice restores original values
+test('clicking swap orientation twice restores the original dimensions', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  const swapButton = screen.getByRole('button', { name: 'Swap orientation' })
+  fireEvent.click(swapButton)
+  fireEvent.click(swapButton)
+  expect(select).toHaveAttribute('data-paper-width', '18')
+  expect(select).toHaveAttribute('data-paper-height', '26')
+})
+
+// AC-5: swap button is focusable (not tabIndex=-1)
+test('swap orientation button is keyboard-focusable', () => {
+  render(<App />)
+  const button = screen.getByRole('button', { name: 'Swap orientation' })
+  expect(button).not.toHaveAttribute('tabindex', '-1')
+})
