@@ -17,9 +17,10 @@ Speed is the primary NFR for both unit and e2e tests. A slow test suite is a tes
 
 ## E2E Tests
 
-- At the end of every feature spec, identify one or more critical user flows that must work for the feature to be considered complete. These become your e2e test cases.
-- Do not use e2e to test edge cases or error responses — that is unit test territory
-- Keep the e2e suite small enough to run in CI on every PR without slowing the pipeline
+- Write an e2e test only when there is a meaningful integration gap: a user-visible flow that cannot be adequately covered by unit tests (e.g. image loading, multi-component interactions, DOM events that only make sense in a real browser).
+- If unit tests already cover all ACs of a feature, an e2e test is optional — do not add one just to check a box.
+- Do not use e2e to test edge cases or error responses — that is unit test territory.
+- Keep the e2e suite small enough to run in CI on every PR without slowing the pipeline.
 
 ## What Not to Test
 
