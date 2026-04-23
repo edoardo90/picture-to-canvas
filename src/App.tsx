@@ -44,11 +44,23 @@ function computeContentLayout(img: HTMLImageElement): ContentLayout | null {
   }
 }
 
+function buildCustomPaperSize(w: string, h: string): PaperSize | null {
+  const widthCm = parseFloat(w)
+  const heightCm = parseFloat(h)
+  if (widthCm > 0 && heightCm > 0) {
+    return { id: 'custom', label: 'Custom', widthCm, heightCm }
+  }
+  return null
+}
+
 function App() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [paperSize, setPaperSize] = useState<PaperSize | null>(
     PAPER_PRESETS.find(p => p.id === '18x26') ?? null
   )
+  const [selectedSizeId, setSelectedSizeId] = useState<string>('18x26')
+  const [customW, setCustomW] = useState<string>('')
+  const [customH, setCustomH] = useState<string>('')
   const [points, setPoints] = useState<PlacedPoint[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -136,8 +148,26 @@ function App() {
   }
 
   function handlePaperSizeChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    const preset = PAPER_PRESETS.find(p => p.id === event.target.value) ?? null
-    setPaperSize(preset)
+    const value = event.target.value
+    setSelectedSizeId(value)
+    if (value === 'custom') {
+      setPaperSize(buildCustomPaperSize(customW, customH))
+    } else {
+      const preset = PAPER_PRESETS.find(p => p.id === value) ?? null
+      setPaperSize(preset)
+    }
+  }
+
+  function handleCustomWidthChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const value = event.target.value
+    setCustomW(value)
+    setPaperSize(buildCustomPaperSize(value, customH))
+  }
+
+  function handleCustomHeightChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const value = event.target.value
+    setCustomH(value)
+    setPaperSize(buildCustomPaperSize(customW, value))
   }
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -297,7 +327,7 @@ function App() {
               <select
                 id="paper-size-select"
                 className="app__paper-size-select"
-                value={paperSize?.id ?? ''}
+                value={selectedSizeId}
                 onChange={handlePaperSizeChange}
                 data-paper-width={paperSize?.widthCm ?? ''}
                 data-paper-height={paperSize?.heightCm ?? ''}
@@ -308,7 +338,35 @@ function App() {
                     {preset.label}
                   </option>
                 ))}
+                <option value="custom">Custom…</option>
               </select>
+
+              {selectedSizeId === 'custom' && (
+                <span className="app__custom-size-inputs">
+                  <label htmlFor="custom-width-input" className="app__paper-size-label">W cm</label>
+                  <input
+                    id="custom-width-input"
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={customW}
+                    onChange={handleCustomWidthChange}
+                    className="app__custom-size-input"
+                    aria-label="Custom width in centimetres"
+                  />
+                  <label htmlFor="custom-height-input" className="app__paper-size-label">H cm</label>
+                  <input
+                    id="custom-height-input"
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={customH}
+                    onChange={handleCustomHeightChange}
+                    className="app__custom-size-input"
+                    aria-label="Custom height in centimetres"
+                  />
+                </span>
+              )}
 
               <button
                 ref={styleButtonRef}

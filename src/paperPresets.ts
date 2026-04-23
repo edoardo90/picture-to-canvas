@@ -1,4 +1,4 @@
-export type PaperSizeId = 'a4' | 'a5' | '18x26'
+export type PaperSizeId = 'a4' | 'a5' | '18x26' | 'custom'
 
 export type PaperSize = {
   id: PaperSizeId

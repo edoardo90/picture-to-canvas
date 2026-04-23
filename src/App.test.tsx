@@ -190,3 +190,102 @@ test('paper size selector is a native select element', () => {
   const select = screen.getByRole('combobox', { name: 'Paper size' })
   expect(select.tagName).toBe('SELECT')
 })
+
+// ── Paper Custom Size (paper-custom-size.md) ────────────────────────────────
+
+// AC-1: "Custom…" option is present
+test('paper size selector includes a "Custom…" option', () => {
+  render(<App />)
+  expect(screen.getByRole('option', { name: 'Custom…' })).toBeInTheDocument()
+})
+
+// AC-2: custom inputs are hidden when a preset is selected
+test('custom size inputs are hidden when a preset is selected', () => {
+  render(<App />)
+  expect(screen.queryByLabelText('Custom width in centimetres')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Custom height in centimetres')).not.toBeInTheDocument()
+})
+
+// AC-2: custom inputs appear when "Custom…" is selected
+test('custom size inputs are shown when "Custom…" is selected', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  expect(screen.getByLabelText('Custom width in centimetres')).toBeInTheDocument()
+  expect(screen.getByLabelText('Custom height in centimetres')).toBeInTheDocument()
+})
+
+// AC-2: custom inputs are hidden after switching back to a preset
+test('custom size inputs are hidden after switching back to a preset', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  fireEvent.change(select, { target: { value: 'a4' } })
+  expect(screen.queryByLabelText('Custom width in centimetres')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Custom height in centimetres')).not.toBeInTheDocument()
+})
+
+// AC-3: entering valid W and H synchronously updates paper size
+test('entering valid W and H sets the paper size dimensions', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  fireEvent.change(screen.getByLabelText('Custom width in centimetres'), { target: { value: '30' } })
+  fireEvent.change(screen.getByLabelText('Custom height in centimetres'), { target: { value: '40' } })
+  expect(select).toHaveAttribute('data-paper-width', '30')
+  expect(select).toHaveAttribute('data-paper-height', '40')
+})
+
+// AC-4: only W filled → paper size is null
+test('entering only W leaves paper size null', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  fireEvent.change(screen.getByLabelText('Custom width in centimetres'), { target: { value: '30' } })
+  expect(select).toHaveAttribute('data-paper-width', '')
+  expect(select).toHaveAttribute('data-paper-height', '')
+})
+
+// AC-4: only H filled → paper size is null
+test('entering only H leaves paper size null', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  fireEvent.change(screen.getByLabelText('Custom height in centimetres'), { target: { value: '40' } })
+  expect(select).toHaveAttribute('data-paper-width', '')
+  expect(select).toHaveAttribute('data-paper-height', '')
+})
+
+// AC-4: select still shows "custom" while editing inputs
+test('select still shows "custom" while custom inputs are being edited', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' }) as HTMLSelectElement
+  fireEvent.change(select, { target: { value: 'custom' } })
+  fireEvent.change(screen.getByLabelText('Custom width in centimetres'), { target: { value: '30' } })
+  expect(select.value).toBe('custom')
+})
+
+// AC-4: zero is not accepted as a valid dimension
+test('entering zero for W leaves paper size null', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  fireEvent.change(screen.getByLabelText('Custom width in centimetres'), { target: { value: '0' } })
+  fireEvent.change(screen.getByLabelText('Custom height in centimetres'), { target: { value: '40' } })
+  expect(select).toHaveAttribute('data-paper-width', '')
+  expect(select).toHaveAttribute('data-paper-height', '')
+})
+
+// OQ-1: custom values are remembered when switching back to "Custom…"
+test('custom values are remembered when switching back to "Custom…"', () => {
+  render(<App />)
+  const select = screen.getByRole('combobox', { name: 'Paper size' })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  fireEvent.change(screen.getByLabelText('Custom width in centimetres'), { target: { value: '24' } })
+  fireEvent.change(screen.getByLabelText('Custom height in centimetres'), { target: { value: '22' } })
+  // Switch to a preset then back to custom
+  fireEvent.change(select, { target: { value: 'a4' } })
+  fireEvent.change(select, { target: { value: 'custom' } })
+  expect(screen.getByLabelText('Custom width in centimetres')).toHaveValue(24)
+  expect(screen.getByLabelText('Custom height in centimetres')).toHaveValue(22)
+})
