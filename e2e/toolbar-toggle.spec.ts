@@ -179,3 +179,63 @@ test('toolbar has a semi-transparent background', async ({ page }) => {
   )
   expect(bg).toBe('rgba(34, 34, 34, 0.8)')
 })
+
+// AC-1 (alignment): after shrinking, Load button is anchored to the left edge
+test('after shrinking the toolbar, the Load button stays anchored to the left edge', async ({ page }) => {
+  await page.goto('/')
+
+  const handle = page.getByRole('separator', { name: 'Resize toolbar' })
+  const handleBox = await handle.boundingBox()
+  if (!handleBox) throw new Error('handle not found')
+
+  const startX = handleBox.x + handleBox.width / 2
+  const startY = handleBox.y + handleBox.height / 2
+
+  // Drag handle upward by 15px to shrink the toolbar (drag up = smaller Y = shrink)
+  await page.mouse.move(startX, startY)
+  await page.mouse.down()
+  await page.mouse.move(startX, startY - 15)
+  await page.mouse.up()
+
+  const toolbar = page.locator('.app__toolbar')
+  const loadButton = page.getByRole('button', { name: 'Load picture' })
+  const [toolbarBox, loadBox] = await Promise.all([
+    toolbar.boundingBox(),
+    loadButton.boundingBox(),
+  ])
+  if (!toolbarBox || !loadBox) throw new Error('elements not found')
+
+  // Load button's left edge must be within 20px of the toolbar's left edge
+  expect(loadBox.x - toolbarBox.x).toBeLessThan(20)
+})
+
+// AC-2 (alignment): after shrinking, Hide button is anchored to the right edge
+test('after shrinking the toolbar, the Hide button stays anchored to the right edge', async ({ page }) => {
+  await page.goto('/')
+
+  const handle = page.getByRole('separator', { name: 'Resize toolbar' })
+  const handleBox = await handle.boundingBox()
+  if (!handleBox) throw new Error('handle not found')
+
+  const startX = handleBox.x + handleBox.width / 2
+  const startY = handleBox.y + handleBox.height / 2
+
+  // Drag handle upward by 15px to shrink the toolbar (drag up = smaller Y = shrink)
+  await page.mouse.move(startX, startY)
+  await page.mouse.down()
+  await page.mouse.move(startX, startY - 15)
+  await page.mouse.up()
+
+  const toolbar = page.locator('.app__toolbar')
+  const hideButton = page.getByRole('button', { name: 'Hide toolbar' })
+  const [toolbarBox, hideBox] = await Promise.all([
+    toolbar.boundingBox(),
+    hideButton.boundingBox(),
+  ])
+  if (!toolbarBox || !hideBox) throw new Error('elements not found')
+
+  // Hide button's right edge must be within 20px of the toolbar's right edge
+  const toolbarRightEdge = toolbarBox.x + toolbarBox.width
+  const hideButtonRightEdge = hideBox.x + hideBox.width
+  expect(toolbarRightEdge - hideButtonRightEdge).toBeLessThan(20)
+})

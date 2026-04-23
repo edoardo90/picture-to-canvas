@@ -278,58 +278,65 @@ function App() {
           className="app__toolbar"
           style={effectiveHeight !== null ? { height: effectiveHeight } : undefined}
         >
-          <div
-            className="app__toolbar-content"
-            style={contentScale < 1 ? { transform: `scale(${contentScale})`, transformOrigin: 'top center' } : undefined}
-          >
-            <button
-              type="button"
-              className="app__load-button"
-              onClick={handleLoadPictureClick}
+          <div className="app__toolbar-content">
+            <div
+              className="app__toolbar-left-group"
+              style={contentScale < 1 ? { transform: `scale(${contentScale})`, transformOrigin: 'top left' } : undefined}
             >
-              Load picture
-            </button>
+              <button
+                type="button"
+                className="app__load-button"
+                onClick={handleLoadPictureClick}
+              >
+                Load picture
+              </button>
 
-            <label htmlFor="paper-size-select" className="app__paper-size-label">
-              Paper size
-            </label>
-            <select
-              id="paper-size-select"
-              className="app__paper-size-select"
-              value={paperSize?.id ?? ''}
-              onChange={handlePaperSizeChange}
-              data-paper-width={paperSize?.widthCm ?? ''}
-              data-paper-height={paperSize?.heightCm ?? ''}
-            >
-              <option value="" disabled hidden>Select size</option>
-              {PAPER_PRESETS.map(preset => (
-                <option key={preset.id} value={preset.id}>
-                  {preset.label}
-                </option>
-              ))}
-            </select>
+              <label htmlFor="paper-size-select" className="app__paper-size-label">
+                Paper size
+              </label>
+              <select
+                id="paper-size-select"
+                className="app__paper-size-select"
+                value={paperSize?.id ?? ''}
+                onChange={handlePaperSizeChange}
+                data-paper-width={paperSize?.widthCm ?? ''}
+                data-paper-height={paperSize?.heightCm ?? ''}
+              >
+                <option value="" disabled hidden>Select size</option>
+                {PAPER_PRESETS.map(preset => (
+                  <option key={preset.id} value={preset.id}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
 
-            <button
-              ref={styleButtonRef}
-              type="button"
-              className="app__style-button"
-              aria-expanded={isStylePanelOpen}
-              aria-controls="style-panel"
-              onClick={() => setIsStylePanelOpen(prev => !prev)}
-            >
-              Points Style
-            </button>
+              <button
+                ref={styleButtonRef}
+                type="button"
+                className="app__style-button"
+                aria-expanded={isStylePanelOpen}
+                aria-controls="style-panel"
+                onClick={() => setIsStylePanelOpen(prev => !prev)}
+              >
+                Points Style
+              </button>
+            </div>
 
-            <button
-              type="button"
-              className="app__toolbar-toggle"
-              aria-label="Hide toolbar"
-              onClick={() => setIsToolbarCollapsed(true)}
+            <div
+              className="app__toolbar-right-group"
+              style={contentScale < 1 ? { transform: `scale(${contentScale})`, transformOrigin: 'top right' } : undefined}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path d="M3 10l5-5 5 5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+              <button
+                type="button"
+                className="app__toolbar-toggle"
+                aria-label="Hide toolbar"
+                onClick={() => setIsToolbarCollapsed(true)}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <path d="M3 10l5-5 5 5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div

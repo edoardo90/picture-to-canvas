@@ -58,9 +58,19 @@
 .app__toolbar-content {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
   padding: 0.5rem 1rem;
-  transform-origin: top center;
+  justify-content: space-between;
+}
+
+.app__toolbar-left-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app__toolbar-right-group {
+  display: flex;
+  align-items: center;
 }
 
 .app__toolbar-resize-handle {
@@ -95,7 +105,6 @@
 }
 
 .app__toolbar-toggle {
-  margin-left: auto;
   display: flex;
   align-items: center;
   justify-content: center;
