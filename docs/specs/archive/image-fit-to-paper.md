@@ -42,31 +42,3 @@ Given image natural dimensions `imgW × imgH` and paper `paperW × paperH`:
 ## Notes
 
 All acceptance criteria are met. No divergences from implementation were found.
-- [x] AC-6: While **Fit** mode is active, the paper orientation swap button is disabled (visually muted, `disabled` attribute set). It carries a native `title` tooltip with the text `"Orientation is set automatically in Fit mode"`. Switching back to Stretch re-enables the button.
-
-## Out of Scope
-
-- Zooming or panning the image on the canvas.
-- Persisting the selected mode across sessions.
-- Rotating the image itself (only the paper orientation mapping changes).
-- Fit mode for the custom paper size preset — it should work the same as any other size, but no special UX is needed.
-- Displaying the inner rect's pixel dimensions or area in the UI.
-- Animated transition when switching modes.
-
-## NFR
-
-- **Performance**: Computing the inner rect is O(1); it must complete synchronously inside the existing event handler with no perceptible delay.
-- **Security**: No new external inputs or data handling — no additional security surface.
-- **Accessibility**: The Stretch/Fit toggle must have a clear `aria-pressed` state and a descriptive `aria-label`. The `↺` badge must have an `aria-label` (e.g. "paper rotated") so it is announced by screen readers.
-
-## Open Questions
-
-- **Q1** ✅ — Badge uses the `↺` text character.
-- **Q2** ✅ — Tolerance `< 0.01 cm²` area difference is accepted.
-
-## Notes
-
-- The rotation introduced by Fit mode is **logical only** — it changes which paper dimension is treated as width/height for coordinate mapping. The image on screen does not rotate.
-- `coordinateMapping.ts` will need a new exported function (e.g. `mapToCanvasFit`) alongside the existing `mapToCanvas`, keeping Stretch mode untouched.
-- The `toImageRelative` / `clampToImageRelative` functions already handle out-of-image-bounds rejection; the Fit mode margin rejection should reuse or extend this pattern rather than duplicating it.
-- AC-5 applies only if the labels do not already include dimensions (currently they do not: `label: 'A4'`, `label: 'A5'`).
