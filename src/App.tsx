@@ -44,9 +44,9 @@ function computeContentLayout(img: HTMLImageElement): ContentLayout | null {
   }
 }
 
-function buildCustomPaperSize(w: string, h: string): PaperSize | null {
-  const widthCm = parseFloat(w)
-  const heightCm = parseFloat(h)
+function buildCustomPaperSize(widthStr: string, heightStr: string): PaperSize | null {
+  const widthCm = parseFloat(widthStr)
+  const heightCm = parseFloat(heightStr)
   if (widthCm > 0 && heightCm > 0) {
     return { id: 'custom', label: 'Custom', widthCm, heightCm }
   }
@@ -59,8 +59,8 @@ function App() {
     PAPER_PRESETS.find(p => p.id === '18x26') ?? null
   )
   const [selectedSizeId, setSelectedSizeId] = useState<string>('18x26')
-  const [customW, setCustomW] = useState<string>('')
-  const [customH, setCustomH] = useState<string>('')
+  const [customWidth, setCustomWidth] = useState<string>('')
+  const [customHeight, setCustomHeight] = useState<string>('')
   const [points, setPoints] = useState<PlacedPoint[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -151,7 +151,7 @@ function App() {
     const value = event.target.value
     setSelectedSizeId(value)
     if (value === 'custom') {
-      setPaperSize(buildCustomPaperSize(customW, customH))
+      setPaperSize(buildCustomPaperSize(customWidth, customHeight))
     } else {
       const preset = PAPER_PRESETS.find(p => p.id === value) ?? null
       setPaperSize(preset)
@@ -160,14 +160,14 @@ function App() {
 
   function handleCustomWidthChange(event: React.ChangeEvent<HTMLInputElement>) {
     const value = event.target.value
-    setCustomW(value)
-    setPaperSize(buildCustomPaperSize(value, customH))
+    setCustomWidth(value)
+    setPaperSize(buildCustomPaperSize(value, customHeight))
   }
 
   function handleCustomHeightChange(event: React.ChangeEvent<HTMLInputElement>) {
     const value = event.target.value
-    setCustomH(value)
-    setPaperSize(buildCustomPaperSize(customW, value))
+    setCustomHeight(value)
+    setPaperSize(buildCustomPaperSize(customWidth, value))
   }
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -349,10 +349,9 @@ function App() {
                     type="number"
                     min="0.1"
                     step="0.1"
-                    value={customW}
+                    value={customWidth}
                     onChange={handleCustomWidthChange}
                     className="app__custom-size-input"
-                    aria-label="Custom width in centimetres"
                   />
                   <label htmlFor="custom-height-input" className="app__paper-size-label">H cm</label>
                   <input
@@ -360,10 +359,9 @@ function App() {
                     type="number"
                     min="0.1"
                     step="0.1"
-                    value={customH}
+                    value={customHeight}
                     onChange={handleCustomHeightChange}
                     className="app__custom-size-input"
-                    aria-label="Custom height in centimetres"
                   />
                 </span>
               )}
