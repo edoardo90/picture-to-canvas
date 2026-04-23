@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { PAPER_PRESETS, type PaperSize } from './paperPresets'
-import { mapToCanvas, toImageRelative, clampToImageRelative } from './coordinateMapping'
+import { mapToCanvas, mapToCanvasFit, computeFitLayout, toImageRelative, clampToImageRelative, type FitLayout } from './coordinateMapping'
 import { loadPointStyle, savePointStyle, type PointStyleSettings } from './pointStyle'
 import { StylePanel } from './StylePanel'
 
@@ -70,6 +70,13 @@ function App() {
   const [dragHeight, setDragHeight] = useState<number | null>(null)
   const [pointStyle, setPointStyle] = useState<PointStyleSettings>(loadPointStyle)
   const [isStylePanelOpen, setIsStylePanelOpen] = useState(false)
+  const [isFitMode, setIsFitMode] = useState(false)
+  const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null)
+
+  const fitLayout: FitLayout | null =
+    isFitMode && naturalSize && paperSize
+      ? computeFitLayout(naturalSize.width, naturalSize.height, paperSize.widthCm, paperSize.heightCm)
+      : null
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
@@ -90,10 +97,16 @@ function App() {
     const img = imageRef.current
     if (!img || !imageUrl) {
       setLayout(null)
+      setNaturalSize(null)
       return
     }
     function update() {
-      if (img) setLayout(computeContentLayout(img))
+      if (img) {
+        setLayout(computeContentLayout(img))
+        if (img.naturalWidth && img.naturalHeight) {
+          setNaturalSize({ width: img.naturalWidth, height: img.naturalHeight })
+        }
+      }
     }
     img.addEventListener('load', update)
     const ro = new ResizeObserver(update)
@@ -118,11 +131,13 @@ function App() {
         setSelectedId(null)
       } else if (e.key === 'Escape') {
         setSelectedId(null)
+      } else if ((e.key === 'f' || e.key === 'F') && imageUrl) {
+        setIsFitMode(prev => !prev)
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [selectedId])
+  }, [selectedId, imageUrl])
 
   useEffect(() => {
     if (toolbarRef.current && naturalToolbarHeightRef.current === null) {
@@ -379,10 +394,35 @@ function App() {
                 type="button"
                 className="app__swap-button"
                 aria-label="Swap orientation"
+                disabled={isFitMode}
+                title={isFitMode ? 'Orientation is set automatically in Fit mode' : undefined}
                 onClick={handleSwapOrientation}
               >
                 ⇅
               </button>
+
+              <button
+                type="button"
+                className={`app__fit-toggle${isFitMode ? ' app__fit-toggle--active' : ''}`}
+                aria-label="Fit mode"
+                aria-pressed={isFitMode}
+                disabled={!imageUrl}
+                onClick={() => setIsFitMode(prev => !prev)}
+              >
+                {isFitMode ? 'Fit' : 'Stretch'}&nbsp;<span className="app__shortcut-hint" aria-hidden="true">F</span>
+              </button>
+
+              {isFitMode && fitLayout?.paperRotated && (
+                <span className="app__fit-rotated-badge" aria-label="paper rotated">↺</span>
+              )}
+
+              {paperSize && (
+                <span className="app__paper-dims">
+                  {isFitMode && fitLayout?.paperRotated
+                    ? `${paperSize.heightCm} × ${paperSize.widthCm} cm`
+                    : `${paperSize.widthCm} × ${paperSize.heightCm} cm`}
+                </span>
+              )}
 
               <button
                 ref={styleButtonRef}
@@ -471,15 +511,37 @@ function App() {
                 onPointerMove={handleOverlayPointerMove}
                 onPointerUp={handleOverlayPointerUp}
               >
+                {isFitMode && layout && (
+                  <>
+                    <defs>
+                      <mask id="fit-margin-mask">
+                        <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                        <rect x={layout.left} y={layout.top} width={layout.width} height={layout.height} fill="black" />
+                      </mask>
+                    </defs>
+                    <rect
+                      x="0" y="0" width="100%" height="100%"
+                      fill="rgba(0,0,0,0.45)"
+                      mask="url(#fit-margin-mask)"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                    <rect
+                      x={layout.left} y={layout.top}
+                      width={layout.width} height={layout.height}
+                      fill="none"
+                      stroke="rgba(255,255,255,0.6)"
+                      strokeWidth={1.5}
+                      strokeDasharray="6 3"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  </>
+                )}
                 {layout && points.map(point => {
                   const x = layout.left + point.relX * layout.width
                   const y = layout.top + point.relY * layout.height
-                  const paperCoords = mapToCanvas(
-                    point.relX,
-                    point.relY,
-                    paperSize.widthCm,
-                    paperSize.heightCm,
-                  )
+                  const paperCoords = fitLayout
+                    ? mapToCanvasFit(point.relX, point.relY, fitLayout)
+                    : mapToCanvas(point.relX, point.relY, paperSize.widthCm, paperSize.heightCm)
                   const isSelected = point.id === selectedId
                   return (
                     <g

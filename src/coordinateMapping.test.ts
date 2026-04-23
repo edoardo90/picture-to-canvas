@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mapToCanvas, toImageRelative, clampToImageRelative } from './coordinateMapping'
+import { mapToCanvas, mapToCanvasFit, computeFitLayout, toImageRelative, clampToImageRelative } from './coordinateMapping'
 
 describe('mapToCanvas', () => {
   it('maps origin to paper origin', () => {
@@ -76,5 +76,85 @@ describe('clampToImageRelative', () => {
 
   it('leaves a point inside the rect unchanged', () => {
     expect(clampToImageRelative(300, 200, rect)).toEqual({ relX: 0.5, relY: 0.5 })
+  })
+})
+
+describe('computeFitLayout', () => {
+  it('returns no rotation when image aspect ratio matches paper exactly', () => {
+    // Square image, square paper
+    const result = computeFitLayout(100, 100, 10, 10)
+    expect(result.paperRotated).toBe(false)
+    expect(result.innerW).toBeCloseTo(10)
+    expect(result.innerH).toBeCloseTo(10)
+    expect(result.offsetX).toBeCloseTo(0)
+    expect(result.offsetY).toBeCloseTo(0)
+  })
+
+  it('rotates paper when landscape image fits better in landscape orientation of portrait paper', () => {
+    // 4:3 landscape image, A4 portrait (21 × 29.7)
+    const result = computeFitLayout(400, 300, 21, 29.7)
+    expect(result.paperRotated).toBe(true)
+    expect(result.innerW).toBeCloseTo(28)
+    expect(result.innerH).toBeCloseTo(21)
+    expect(result.offsetX).toBeCloseTo(0.85)
+    expect(result.offsetY).toBeCloseTo(0)
+  })
+
+  it('does not rotate when portrait image fits better in portrait paper', () => {
+    // 3:4 portrait image, A4 portrait (21 × 29.7)
+    const result = computeFitLayout(300, 400, 21, 29.7)
+    expect(result.paperRotated).toBe(false)
+    expect(result.innerW).toBeCloseTo(21)
+    expect(result.innerH).toBeCloseTo(28)
+    expect(result.offsetX).toBeCloseTo(0)
+    expect(result.offsetY).toBeCloseTo(0.85)
+  })
+
+  it('centers the inner rect with equal offsets on constrained axis', () => {
+    // Square image (1:1) in A4 portrait (21 × 29.7) — constrained by width
+    const result = computeFitLayout(100, 100, 21, 29.7)
+    expect(result.paperRotated).toBe(false)
+    expect(result.innerW).toBeCloseTo(21)
+    expect(result.innerH).toBeCloseTo(21)
+    expect(result.offsetX).toBeCloseTo(0)
+    expect(result.offsetY).toBeCloseTo((29.7 - 21) / 2)
+  })
+
+  it('chooses option A (no rotation) when areas are within 0.01 cm² tolerance', () => {
+    // Square image in square paper — both options produce identical area
+    const result = computeFitLayout(50, 50, 20, 20)
+    expect(result.paperRotated).toBe(false)
+  })
+
+  it('inner rect aspect ratio always matches image aspect ratio', () => {
+    const result = computeFitLayout(1920, 1080, 18, 26)
+    const imageRatio = 1920 / 1080
+    const innerRatio = result.innerW / result.innerH
+    expect(innerRatio).toBeCloseTo(imageRatio, 5)
+  })
+})
+
+describe('mapToCanvasFit', () => {
+  const layout = { innerW: 28, innerH: 21, offsetX: 0.85, offsetY: 0, paperRotated: true }
+
+  it('maps origin (0, 0) to the inner rect top-left offset', () => {
+    expect(mapToCanvasFit(0, 0, layout)).toEqual({ xCm: 0.85, yCm: 0 })
+  })
+
+  it('maps far corner (1, 1) to inner rect bottom-right', () => {
+    const result = mapToCanvasFit(1, 1, layout)
+    expect(result.xCm).toBeCloseTo(0.85 + 28)
+    expect(result.yCm).toBeCloseTo(0 + 21)
+  })
+
+  it('maps center (0.5, 0.5) to the center of the inner rect', () => {
+    const result = mapToCanvasFit(0.5, 0.5, layout)
+    expect(result.xCm).toBeCloseTo(0.85 + 14)
+    expect(result.yCm).toBeCloseTo(10.5)
+  })
+
+  it('maps with zero offsets when inner rect fills entire paper', () => {
+    const squareLayout = { innerW: 21, innerH: 29.7, offsetX: 0, offsetY: 0, paperRotated: false }
+    expect(mapToCanvasFit(0.5, 0.5, squareLayout)).toEqual({ xCm: 10.5, yCm: 14.85 })
   })
 })

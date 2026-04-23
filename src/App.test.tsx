@@ -136,8 +136,8 @@ test('paper size selector shows 18 × 26 cm as default on initial render', () =>
 // E-2 AC-3: all three preset options are present
 test('paper size selector offers all three preset options', () => {
   render(<App />)
-  expect(screen.getByRole('option', { name: 'A4' })).toBeInTheDocument()
-  expect(screen.getByRole('option', { name: 'A5' })).toBeInTheDocument()
+  expect(screen.getByRole('option', { name: 'A4 (21×29.7)' })).toBeInTheDocument()
+  expect(screen.getByRole('option', { name: 'A5 (14.8×21)' })).toBeInTheDocument()
   expect(screen.getByRole('option', { name: '18 × 26 cm' })).toBeInTheDocument()
 })
 
