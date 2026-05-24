@@ -129,17 +129,21 @@
   align-items: center;
   padding: 0.5rem 1rem;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .app__toolbar-left-group {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
 }
 
 .app__toolbar-right-group {
   display: flex;
   align-items: center;
+  flex: 0 0 auto;
 }
 
 .app__toolbar-resize-handle {
@@ -368,6 +372,96 @@
 }
 .app__segment { padding: 6px 10px; }
 .app__segment svg { width: 28px; height: 20px }
+
+/* Responsive: adapt toolbar and controls for phones/tablets */
+@media (max-width: 720px) {
+  .app__toolbar {
+    padding: 8px 10px;
+  }
+  .app__toolbar-content {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .app__toolbar-left-group, .app__toolbar-right-group {
+    transform: none !important;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .app__load-button, .app__style-button, .app__swap-button {
+    min-width: 0;
+    width: auto;
+    flex: 1 1 auto;
+  }
+
+  /* Center label/icon inside the load button on narrow screens */
+  .app__load-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 1rem;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  /* Make the load button larger on mobile to avoid overflow */
+  .app__load-button {
+    min-width: 120px;
+    min-height: 48px;
+  }
+  .app__paper-size-select {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+  .app__custom-size-inputs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .app__segmented-control { gap: 6px; }
+  .app__segment { padding: 10px; font-size: 0.95rem; }
+  .app__segment-label { display: inline-block }
+  .app__segment-sub { display: none }
+  /* Make Points Style always reachable on mobile with a floating button */
+  .app__style-button {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 400;
+    border-radius: 999px;
+    padding: 10px 12px;
+    min-width: 48px;
+    min-height: 48px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  }
+}
+
+@media (max-width: 420px) {
+  .app__toolbar { padding: 6px; }
+  .app__toolbar-content { gap: 6px }
+  .app__toolbar-left-group { flex-direction: column; align-items: stretch }
+  .app__segment { display: flex; justify-content: center; gap: 6px }
+  .app__segment svg { width: 22px; height: 16px }
+  .app__paper-dims { display: none }
+  .app__custom-size-inputs { flex-direction: row; }
+  .app__load-button, .app__style-button { padding: 10px; }
+  .app__point-overlay { touch-action: none; }
+
+  /* On very narrow devices, let the load button span full width */
+  .app__load-button { width: 100%; box-sizing: border-box }
+}
+
+/* Hide Points Style button entirely on small devices (smaller than iPad) */
+@media (max-width: 768px) {
+  .app__style-button {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
 
 /* ── Paper rect ── */
 
