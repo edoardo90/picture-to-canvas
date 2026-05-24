@@ -354,8 +354,11 @@
 /* Segmented control for Fit / Stretch */
 .app__segmented-control {
   display: inline-flex;
-  gap: 6px;
+  gap: 0;
   align-items: center;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  overflow: hidden;
 }
 .app__segment {
   display: inline-flex;
@@ -371,11 +374,12 @@
 }
 .app__segment:disabled { opacity: 0.45; cursor: not-allowed }
 .app__segment--active {
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.12);
   border-color: rgba(255,255,255,0.18);
 }
 .app__segment svg { display: block }
 .app__segment-label { line-height: 1 }
+/* helper label removed */
 .app__segment-sub {
   display: block;
   font-size: 11px;

@@ -482,11 +482,11 @@ function App() {
                 </span>
               )}
 
-              <div className="app__segmented-control" role="tablist" aria-label="Mapping mode">
+              <div className="app__segmented-control" role="radiogroup" aria-label="Mapping mode">
                 <button
                   type="button"
-                  role="tab"
-                  aria-pressed={isFitMode}
+                  role="radio"
+                  aria-checked={isFitMode}
                   className={`app__segment${isFitMode ? ' app__segment--active' : ''}`}
                   disabled={!imageUrl}
                   onClick={() => setIsFitMode(true)}
@@ -505,8 +505,8 @@ function App() {
 
                 <button
                   type="button"
-                  role="tab"
-                  aria-pressed={!isFitMode}
+                  role="radio"
+                  aria-checked={!isFitMode}
                   className={`app__segment${!isFitMode ? ' app__segment--active' : ''}`}
                   disabled={!imageUrl}
                   onClick={() => setIsFitMode(false)}
