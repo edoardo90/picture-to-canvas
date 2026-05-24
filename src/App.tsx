@@ -486,17 +486,7 @@ function App() {
                 {isFitMode ? 'Fit' : 'Stretch'}&nbsp;<span className="app__shortcut-hint" aria-hidden="true">F</span>
               </button>
 
-              {fitLayout?.paperRotated && (
-                <span className="app__fit-rotated-badge" aria-label="paper rotated">↺</span>
-              )}
 
-              {paperSize && (
-                <span className="app__paper-dims">
-                  {fitLayout?.paperRotated
-                    ? `${paperSize.heightCm} × ${paperSize.widthCm} cm`
-                    : `${paperSize.widthCm} × ${paperSize.heightCm} cm`}
-                </span>
-              )}
 
               <button
                 ref={styleButtonRef}
@@ -692,9 +682,10 @@ function App() {
                         />
                       )}
                       <text
-                        x={x + pointStyle.labelOffsetDx}
-                        y={y + pointStyle.labelOffsetDy}
+                        x={x + (point.relX > 0.75 ? -Math.abs(pointStyle.labelOffsetDx) : Math.abs(pointStyle.labelOffsetDx))}
+                        y={y + (point.relY < 0.2 ? pointStyle.labelFontSize + 2 : -(Math.abs(pointStyle.labelOffsetDy) || 6))}
                         className="app__point-label"
+                        textAnchor={point.relX > 0.75 ? 'end' : 'start'}
                         style={{ fontSize: pointStyle.labelFontSize, opacity: pointStyle.labelOpacity }}
                       >
                         <tspan>{paperCoords.xCm.toFixed(1)}, </tspan>
