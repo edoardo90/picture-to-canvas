@@ -76,21 +76,24 @@ function App() {
   const [isDragOverCanvas, setIsDragOverCanvas] = useState(false)
   const [displaySize, setDisplaySize] = useState<{ w: number; h: number } | null>(null)
 
+  // Always compute fitLayout so both modes benefit from auto-orientation.
   const fitLayout: FitLayout | null =
-    isFitMode && naturalSize && paperSize
+    naturalSize && paperSize
       ? computeFitLayout(naturalSize.width, naturalSize.height, paperSize.widthCm, paperSize.heightCm)
       : null
 
   // Compute paper rect by fitting the paper aspect ratio into the display area,
   // then derive the image position within that paper rect.
-  // This ensures white paper strips are always visible (no overflow clipping).
+  // In Fit mode the image is placed inside the paper preserving aspect ratio.
+  // In Stretch mode the image fills the paper entirely (deformed), giving the
+  // user a preview of what "stretching" looks like.
   let fitCanvasLayout: {
     paper: { x: number; y: number; w: number; h: number }
     image: { left: number; top: number; width: number; height: number }
   } | null = null
-  if (isFitMode && displaySize && fitLayout && paperSize) {
-    const effectivePaperW = fitLayout.paperRotated ? paperSize.heightCm : paperSize.widthCm
-    const effectivePaperH = fitLayout.paperRotated ? paperSize.widthCm : paperSize.heightCm
+  if (displaySize && paperSize) {
+    const effectivePaperW = fitLayout?.paperRotated ? paperSize.heightCm : paperSize.widthCm
+    const effectivePaperH = fitLayout?.paperRotated ? paperSize.widthCm : paperSize.heightCm
     const paperAspect = effectivePaperW / effectivePaperH
     const displayAspect = displaySize.w / displaySize.h
     let pW: number, pH: number
@@ -103,20 +106,28 @@ function App() {
     }
     const pX = (displaySize.w - pW) / 2
     const pY = (displaySize.h - pH) / 2
-    const scale = pW / effectivePaperW
-    const imgW = fitLayout.innerW * scale
-    const imgH = fitLayout.innerH * scale
-    const imgX = pX + fitLayout.offsetX * scale
-    const imgY = pY + fitLayout.offsetY * scale
-    fitCanvasLayout = {
-      paper: { x: pX, y: pY, w: pW, h: pH },
-      image: { left: imgX, top: imgY, width: imgW, height: imgH },
+    if (isFitMode && fitLayout) {
+      // Image fits inside paper, preserving its aspect ratio
+      const scale = pW / effectivePaperW
+      const imgW = fitLayout.innerW * scale
+      const imgH = fitLayout.innerH * scale
+      const imgX = pX + fitLayout.offsetX * scale
+      const imgY = pY + fitLayout.offsetY * scale
+      fitCanvasLayout = {
+        paper: { x: pX, y: pY, w: pW, h: pH },
+        image: { left: imgX, top: imgY, width: imgW, height: imgH },
+      }
+    } else {
+      // Stretch mode: image fills the full paper rect (deformed)
+      fitCanvasLayout = {
+        paper: { x: pX, y: pY, w: pW, h: pH },
+        image: { left: pX, top: pY, width: pW, height: pH },
+      }
     }
   }
   const paperRect = fitCanvasLayout ? fitCanvasLayout.paper : null
   // svgLayout gives image coordinates relative to the display area (SVG viewport).
-  // In fit mode use fitCanvasLayout; in stretch mode fall back to layout.
-  const svgLayout = (isFitMode && fitCanvasLayout) ? fitCanvasLayout.image : layout
+  const svgLayout = fitCanvasLayout ? fitCanvasLayout.image : layout
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
@@ -226,15 +237,6 @@ function App() {
     styleButtonRef.current?.focus()
   }
 
-  function handleSwapOrientation() {
-    if (!paperSize) return
-    setPaperSize({ ...paperSize, widthCm: paperSize.heightCm, heightCm: paperSize.widthCm })
-    if (selectedSizeId === 'custom') {
-      setCustomWidth(customHeight)
-      setCustomHeight(customWidth)
-    }
-  }
-
   function handleLoadPictureClick() {
     fileInputRef.current?.click()
   }
@@ -281,8 +283,18 @@ function App() {
 
   function getViewportContentRect() {
     const img = imageRef.current
-    if (!img || !layout) return null
+    if (!img) return null
     const imgRect = img.getBoundingClientRect()
+    if (fitCanvasLayout) {
+      // img is explicitly positioned at fitCanvasLayout.image — no object-fit offset
+      return {
+        left: imgRect.left,
+        top: imgRect.top,
+        width: fitCanvasLayout.image.width,
+        height: fitCanvasLayout.image.height,
+      }
+    }
+    if (!layout) return null
     return {
       left: imgRect.left + layout.left,
       top: imgRect.top + layout.top,
@@ -465,17 +477,6 @@ function App() {
 
               <button
                 type="button"
-                className="app__swap-button"
-                aria-label="Swap orientation"
-                disabled={isFitMode}
-                title={isFitMode ? 'Orientation is set automatically in Fit mode' : undefined}
-                onClick={handleSwapOrientation}
-              >
-                ⇅
-              </button>
-
-              <button
-                type="button"
                 className={`app__fit-toggle${isFitMode ? ' app__fit-toggle--active' : ''}`}
                 aria-label="Fit mode"
                 aria-pressed={isFitMode}
@@ -485,13 +486,13 @@ function App() {
                 {isFitMode ? 'Fit' : 'Stretch'}&nbsp;<span className="app__shortcut-hint" aria-hidden="true">F</span>
               </button>
 
-              {isFitMode && fitLayout?.paperRotated && (
+              {fitLayout?.paperRotated && (
                 <span className="app__fit-rotated-badge" aria-label="paper rotated">↺</span>
               )}
 
               {paperSize && (
                 <span className="app__paper-dims">
-                  {isFitMode && fitLayout?.paperRotated
+                  {fitLayout?.paperRotated
                     ? `${paperSize.heightCm} × ${paperSize.widthCm} cm`
                     : `${paperSize.widthCm} × ${paperSize.heightCm} cm`}
                 </span>
@@ -607,6 +608,7 @@ function App() {
                 top: fitCanvasLayout.image.top,
                 width: fitCanvasLayout.image.width,
                 height: fitCanvasLayout.image.height,
+                objectFit: isFitMode ? undefined : 'fill',
               } : undefined}
             />
             {/* Removed explicit "Remove image" button per UX update; image can be replaced by dropping a new file. */}
@@ -646,9 +648,13 @@ function App() {
                 {svgLayout && points.map(point => {
                   const x = svgLayout.left + point.relX * svgLayout.width
                   const y = svgLayout.top + point.relY * svgLayout.height
-                  const paperCoords = fitLayout
+                  const paperCoords = (isFitMode && fitLayout)
                     ? mapToCanvasFit(point.relX, point.relY, fitLayout)
-                    : mapToCanvas(point.relX, point.relY, paperSize.widthCm, paperSize.heightCm)
+                    : mapToCanvas(
+                        point.relX, point.relY,
+                        fitLayout?.paperRotated ? paperSize.heightCm : paperSize.widthCm,
+                        fitLayout?.paperRotated ? paperSize.widthCm : paperSize.heightCm,
+                      )
                   const isSelected = point.id === selectedId
                   return (
                     <g
