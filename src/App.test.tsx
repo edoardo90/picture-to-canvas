@@ -25,6 +25,13 @@ function selectFile(input: HTMLInputElement, file: File) {
   fireEvent.change(input)
 }
 
+// Fit mode is the default; swap button is disabled in Fit mode.
+// Load an image then click Fit to switch to Stretch so swap tests can run.
+function switchToStretchMode() {
+  selectFile(getFileInput(), new File(['content'], 'photo.jpg', { type: 'image/jpeg' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Fit mode' }))
+}
+
 // AC-1: button visible on initial screen
 test('shows a "Load picture" button on initial render', () => {
   render(<App />)
@@ -331,6 +338,7 @@ test('swap orientation button is a native button element', () => {
 // AC-2: clicking swap exchanges widthCm and heightCm for a preset
 test('clicking swap orientation swaps widthCm and heightCm for a preset', () => {
   render(<App />)
+  switchToStretchMode()
   const select = screen.getByRole('combobox', { name: 'Paper size' })
   // Default is 18x26: width=18, height=26
   expect(select).toHaveAttribute('data-paper-width', '18')
@@ -343,6 +351,7 @@ test('clicking swap orientation swaps widthCm and heightCm for a preset', () => 
 // AC-3: swap works for preset sizes (A4 example)
 test('clicking swap orientation swaps A4 dimensions', () => {
   render(<App />)
+  switchToStretchMode()
   const select = screen.getByRole('combobox', { name: 'Paper size' })
   fireEvent.change(select, { target: { value: 'a4' } })
   // A4 portrait: width=21, height=29.7
@@ -354,6 +363,7 @@ test('clicking swap orientation swaps A4 dimensions', () => {
 // AC-3: swap works for custom sizes
 test('clicking swap orientation swaps custom width and height values', () => {
   render(<App />)
+  switchToStretchMode()
   const select = screen.getByRole('combobox', { name: 'Paper size' })
   fireEvent.change(select, { target: { value: 'custom' } })
   fireEvent.change(screen.getByLabelText('W cm'), { target: { value: '30' } })
@@ -366,6 +376,7 @@ test('clicking swap orientation swaps custom width and height values', () => {
 // AC-3: custom input fields also reflect the swapped values
 test('custom input fields reflect swapped values after swap', () => {
   render(<App />)
+  switchToStretchMode()
   const select = screen.getByRole('combobox', { name: 'Paper size' })
   fireEvent.change(select, { target: { value: 'custom' } })
   fireEvent.change(screen.getByLabelText('W cm'), { target: { value: '30' } })
@@ -391,4 +402,53 @@ test('swap orientation button is keyboard-focusable', () => {
   render(<App />)
   const button = screen.getByRole('button', { name: 'Swap orientation' })
   expect(button).not.toHaveAttribute('tabindex', '-1')
+})
+
+// ── fit-mode-paper-rect ──────────────────────────────────────────────────────
+
+// AC-1: Fit mode is active by default
+test('Fit toggle is aria-pressed="true" on initial render', () => {
+  render(<App />)
+  const fitButton = screen.getByRole('button', { name: 'Fit mode' })
+  expect(fitButton).toHaveAttribute('aria-pressed', 'true')
+})
+
+// AC-5: paper rect is absent when no image is loaded (layout is null)
+test('paper rect is not rendered when no image is loaded', () => {
+  render(<App />)
+  expect(document.querySelector('[data-testid="paper-rect"]')).not.toBeInTheDocument()
+})
+
+// AC-2+AC-3: paper rect div is rendered in Fit mode when image and layout are available
+test('paper rect div is rendered in Fit mode when image and layout are available', () => {
+  // jsdom returns 0 for getBoundingClientRect and naturalWidth/naturalHeight by default.
+  // Override them so the layout computation produces a non-null result.
+  const getBCRSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+    width: 800, height: 600, left: 0, top: 0, right: 800, bottom: 600,
+    x: 0, y: 0, toJSON: () => ({}),
+  } as DOMRect)
+  Object.defineProperty(HTMLImageElement.prototype, 'naturalWidth', { get: () => 1200, configurable: true })
+  Object.defineProperty(HTMLImageElement.prototype, 'naturalHeight', { get: () => 900, configurable: true })
+
+  render(<App />)
+  selectFile(getFileInput(), new File(['content'], 'photo.jpg', { type: 'image/jpeg' }))
+
+  expect(document.querySelector('[data-testid="paper-rect"]')).toBeInTheDocument()
+
+  getBCRSpy.mockRestore()
+  Object.defineProperty(HTMLImageElement.prototype, 'naturalWidth', { get: () => 0, configurable: true })
+  Object.defineProperty(HTMLImageElement.prototype, 'naturalHeight', { get: () => 0, configurable: true })
+})
+
+// AC-5: paper rect is absent in Stretch mode even after an image is loaded
+test('paper rect is absent in Stretch mode', () => {
+  render(<App />)
+  const file = new File(['content'], 'photo.jpg', { type: 'image/jpeg' })
+  const input = document.querySelector('input[type="file"]') as HTMLInputElement
+  Object.defineProperty(input, 'files', { value: [file], writable: false, configurable: true })
+  fireEvent.change(input)
+  // layout is null in jsdom (no ResizeObserver), so paperRect is always null regardless
+  expect(document.querySelector('[data-testid="paper-rect"]')).not.toBeInTheDocument()
+  // Confirm Fit mode is active (AC-1 holds even when no layout computed)
+  expect(screen.getByRole('button', { name: 'Fit mode' })).toHaveAttribute('aria-pressed', 'true')
 })

@@ -108,6 +108,8 @@
   height: 100%;
   object-fit: contain;
   display: block;
+  position: relative;
+  z-index: 1;
 }
 
 .app__empty-state {
@@ -332,6 +334,16 @@
   cursor: not-allowed;
 }
 
+/* ── Paper rect ── */
+
+.app__paper-rect {
+  position: absolute;
+  background: #ffffff;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* ── Point overlay ── */
 
 .app__point-overlay {
@@ -341,6 +353,7 @@
   height: 100%;
   touch-action: none;
   user-select: none;
+  z-index: 2;
 }
 
 .app__point-group {

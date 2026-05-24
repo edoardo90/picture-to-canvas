@@ -71,18 +71,57 @@ function App() {
   const [dragHeight, setDragHeight] = useState<number | null>(null)
   const [pointStyle, setPointStyle] = useState<PointStyleSettings>(loadPointStyle)
   const [isStylePanelOpen, setIsStylePanelOpen] = useState(false)
-  const [isFitMode, setIsFitMode] = useState(false)
+  const [isFitMode, setIsFitMode] = useState(true)
   const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null)
   const [isDragOverCanvas, setIsDragOverCanvas] = useState(false)
+  const [displaySize, setDisplaySize] = useState<{ w: number; h: number } | null>(null)
 
   const fitLayout: FitLayout | null =
     isFitMode && naturalSize && paperSize
       ? computeFitLayout(naturalSize.width, naturalSize.height, paperSize.widthCm, paperSize.heightCm)
       : null
 
+  // Compute paper rect by fitting the paper aspect ratio into the display area,
+  // then derive the image position within that paper rect.
+  // This ensures white paper strips are always visible (no overflow clipping).
+  let fitCanvasLayout: {
+    paper: { x: number; y: number; w: number; h: number }
+    image: { left: number; top: number; width: number; height: number }
+  } | null = null
+  if (isFitMode && displaySize && fitLayout && paperSize) {
+    const effectivePaperW = fitLayout.paperRotated ? paperSize.heightCm : paperSize.widthCm
+    const effectivePaperH = fitLayout.paperRotated ? paperSize.widthCm : paperSize.heightCm
+    const paperAspect = effectivePaperW / effectivePaperH
+    const displayAspect = displaySize.w / displaySize.h
+    let pW: number, pH: number
+    if (paperAspect > displayAspect) {
+      pW = displaySize.w
+      pH = displaySize.w / paperAspect
+    } else {
+      pH = displaySize.h
+      pW = displaySize.h * paperAspect
+    }
+    const pX = (displaySize.w - pW) / 2
+    const pY = (displaySize.h - pH) / 2
+    const scale = pW / effectivePaperW
+    const imgW = fitLayout.innerW * scale
+    const imgH = fitLayout.innerH * scale
+    const imgX = pX + fitLayout.offsetX * scale
+    const imgY = pY + fitLayout.offsetY * scale
+    fitCanvasLayout = {
+      paper: { x: pX, y: pY, w: pW, h: pH },
+      image: { left: imgX, top: imgY, width: imgW, height: imgH },
+    }
+  }
+  const paperRect = fitCanvasLayout ? fitCanvasLayout.paper : null
+  // svgLayout gives image coordinates relative to the display area (SVG viewport).
+  // In fit mode use fitCanvasLayout; in stretch mode fall back to layout.
+  const svgLayout = (isFitMode && fitCanvasLayout) ? fitCanvasLayout.image : layout
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
   const toolbarRef = useRef<HTMLDivElement>(null)
+  const displayAreaRef = useRef<HTMLDivElement>(null)
   const styleButtonRef = useRef<HTMLButtonElement>(null)
   const dragStartRef = useRef<{ startY: number; startHeight: number } | null>(null)
   const naturalToolbarHeightRef = useRef<number | null>(null)
@@ -119,6 +158,19 @@ function App() {
       ro.disconnect()
     }
   }, [imageUrl])
+
+  useEffect(() => {
+    const el = displayAreaRef.current
+    if (!el) return
+    function update() {
+      const rect = el!.getBoundingClientRect()
+      setDisplaySize({ w: rect.width, h: rect.height })
+    }
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    update()
+    return () => ro.disconnect()
+  }, [])
 
   // Prevent the browser from navigating away when a file is dropped outside
   // the upload zone (e.g. onto the canvas after an image is already loaded).
@@ -516,6 +568,7 @@ function App() {
       )}
 
       <div
+        ref={displayAreaRef}
         className={`app__display-area${isDragOverCanvas ? ' app__display-area--dragover' : ''}`}
         onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOverCanvas(true) }}
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOverCanvas(true) }}
@@ -530,11 +583,31 @@ function App() {
       >
         {imageUrl ? (
           <>
+            {paperRect && (
+              <div
+                className="app__paper-rect"
+                data-testid="paper-rect"
+                aria-hidden="true"
+                style={{
+                  left: `${paperRect.x}px`,
+                  top: `${paperRect.y}px`,
+                  width: `${paperRect.w}px`,
+                  height: `${paperRect.h}px`,
+                }}
+              />
+            )}
             <img
               ref={imageRef}
               src={imageUrl}
               alt="Reference picture"
               className="app__image"
+              style={fitCanvasLayout ? {
+                position: 'absolute',
+                left: fitCanvasLayout.image.left,
+                top: fitCanvasLayout.image.top,
+                width: fitCanvasLayout.image.width,
+                height: fitCanvasLayout.image.height,
+              } : undefined}
             />
             {/* Removed explicit "Remove image" button per UX update; image can be replaced by dropping a new file. */}
             {paperSize && (
@@ -545,12 +618,12 @@ function App() {
                 onPointerMove={handleOverlayPointerMove}
                 onPointerUp={handleOverlayPointerUp}
               >
-                {isFitMode && layout && (
+                {isFitMode && svgLayout && (
                   <>
                     <defs>
                       <mask id="fit-margin-mask">
                         <rect x="0" y="0" width="100%" height="100%" fill="white" />
-                        <rect x={layout.left} y={layout.top} width={layout.width} height={layout.height} fill="black" />
+                        <rect x={svgLayout.left} y={svgLayout.top} width={svgLayout.width} height={svgLayout.height} fill="black" />
                       </mask>
                     </defs>
                     <rect
@@ -560,8 +633,8 @@ function App() {
                       style={{ pointerEvents: 'none' }}
                     />
                     <rect
-                      x={layout.left} y={layout.top}
-                      width={layout.width} height={layout.height}
+                      x={svgLayout.left} y={svgLayout.top}
+                      width={svgLayout.width} height={svgLayout.height}
                       fill="none"
                       stroke="rgba(255,255,255,0.6)"
                       strokeWidth={1.5}
@@ -570,9 +643,9 @@ function App() {
                     />
                   </>
                 )}
-                {layout && points.map(point => {
-                  const x = layout.left + point.relX * layout.width
-                  const y = layout.top + point.relY * layout.height
+                {svgLayout && points.map(point => {
+                  const x = svgLayout.left + point.relX * svgLayout.width
+                  const y = svgLayout.top + point.relY * svgLayout.height
                   const paperCoords = fitLayout
                     ? mapToCanvasFit(point.relX, point.relY, fitLayout)
                     : mapToCanvas(point.relX, point.relY, paperSize.widthCm, paperSize.heightCm)
