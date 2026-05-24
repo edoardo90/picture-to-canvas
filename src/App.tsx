@@ -454,7 +454,6 @@ function App() {
                     {preset.label}
                   </option>
                 ))}
-                <option value="custom">Custom…</option>
               </select>
 
               {selectedSizeId === 'custom' && (
