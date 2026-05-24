@@ -129,21 +129,27 @@
   align-items: center;
   padding: 0.5rem 1rem;
   justify-content: space-between;
-  flex-wrap: wrap;
+  /* keep toolbar on a single line; allow horizontal scroll if items overflow */
+  flex-wrap: nowrap;
+  overflow-x: auto;
 }
 
 .app__toolbar-left-group {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
+  /* allow shrinking but do not wrap so the right chevron stays on the same line */
+  flex: 1 1 0%;
+  min-width: 0;
+  flex-wrap: nowrap;
 }
 
 .app__toolbar-right-group {
   display: flex;
   align-items: center;
+  /* prefer to keep the right group on the same line */
   flex: 0 0 auto;
+  min-width: 0;
 }
 
 .app__toolbar-resize-handle {
@@ -237,6 +243,13 @@
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .app__load-button:hover {
@@ -378,18 +391,17 @@
   .app__toolbar {
     padding: 8px 10px;
   }
+  /* Keep single-line toolbar on phones; make items compact instead of wrapping */
   .app__toolbar-content {
-    flex-direction: column;
     gap: 8px;
-    align-items: stretch;
+    align-items: center;
   }
   .app__toolbar-left-group, .app__toolbar-right-group {
     transform: none !important;
     display: flex;
-    width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
   .app__load-button, .app__style-button, .app__swap-button {
     min-width: 0;
@@ -453,6 +465,58 @@
 
   /* On very narrow devices, let the load button span full width */
   .app__load-button { width: 100%; box-sizing: border-box }
+}
+
+/* Compact UI for short-height viewports (landscape phones like iPhone 12/14) */
+@media (max-height: 420px) {
+  .app__segment { padding: 6px 8px; font-size: 0.85rem; }
+  .app__segment-label { font-size: 0.9rem; }
+  .app__segment-sub { display: none; }
+  .app__load-button { padding: 8px 10px; font-size: 0.92rem; min-width: 96px; }
+  .app__load-button { width: 100%; }
+  .app__paper-size-select { font-size: 0.92rem; padding: 6px; }
+  .app__custom-size-inputs input { padding: 6px; }
+  /* Hide Points Style on very short viewports */
+  .app__style-button { display: none !important; visibility: hidden !important; }
+}
+
+/* Extra compact rules for very small devices (e.g. iPhone SE, Surface Duo small widths) */
+@media (max-width: 360px) {
+  .app__toolbar-left-group { gap: 0.4rem }
+  .app__segment { padding: 4px 6px; font-size: 0.82rem }
+  .app__segment-label { display: none }
+  .app__segment-sub { display: none }
+  .app__load-button { padding: 8px; font-size: 0.9rem; min-width: 0 }
+  .app__load-button { width: 100%; }
+  .app__paper-size-label { display: none }
+  .app__paper-size-select { min-width: 64px; padding: 6px; font-size: 0.88rem }
+  .app__custom-size-inputs input { padding: 6px; font-size: 0.88rem }
+  .app__paper-dims { display: none }
+}
+
+/* Larger touch targets on very tall displays (e.g. iPhone 14 Pro Max portrait) */
+@media (min-height: 800px) {
+  .app__load-button {
+    padding: 14px 20px;
+    font-size: 1.05rem;
+    min-width: 120px;
+    min-height: 52px;
+    max-width: 70%;
+  }
+}
+
+/* Aggressive compaction for narrow-width devices (e.g., Surface Duo portrait/dual-pane) */
+@media (max-width: 580px) {
+  .app__toolbar-left-group { gap: 0.3rem }
+  .app__segment { padding: 4px 6px; font-size: 0.78rem }
+  .app__segment-label { display: none }
+  .app__segment-sub { display: none }
+  .app__segment svg { width: 16px; height: 12px }
+  .app__load-button { padding: 6px 8px; font-size: 0.86rem; min-width: 0; min-height: 36px }
+  .app__load-button { width: auto }
+  .app__paper-size-select { padding: 4px 6px; font-size: 0.84rem; min-width: 56px }
+  .app__paper-size-label { display: none }
+  .app__custom-size-inputs { gap: 6px }
 }
 
 /* Hide Points Style button entirely on small devices (smaller than iPad) */
