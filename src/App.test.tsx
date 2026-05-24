@@ -110,7 +110,7 @@ test('does not display an image when a non-image file is selected', () => {
   render(<App />)
   const file = new File(['content'], 'document.txt', { type: 'text/plain' })
   selectFile(getFileInput(), file)
-  expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  expect(screen.queryByRole('img', { name: 'Reference picture' })).not.toBeInTheDocument()
 })
 
 // E-2 AC-1: paper size selector is visible before an image is loaded

@@ -7,7 +7,7 @@ const FIXTURE_IMAGE = path.join(__dirname, 'fixtures', 'sample.jpg')
 
 async function loadImageAndSelectPaper(page: Page) {
   await page.goto('/')
-  const fileInput = page.locator('input[type="file"]')
+  const fileInput = page.locator('input.app__file-input')
   await fileInput.setInputFiles(FIXTURE_IMAGE)
   await page.waitForSelector('img[alt="Reference picture"]')
   await page.selectOption('#paper-size-select', 'a4')

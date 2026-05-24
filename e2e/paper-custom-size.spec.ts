@@ -8,12 +8,8 @@ const FIXTURE_IMAGE = path.join(__dirname, 'fixtures', 'sample.jpg')
 async function loadImage(page: Page) {
   await page.goto('/')
   // Wait for the React app to render, then make the hidden file input interactable
-  await page.waitForSelector('input[type="file"]', { state: 'attached' })
-  await page.evaluate(() => {
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement
-    input.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01'
-  })
-  await page.locator('input[type="file"]').setInputFiles(FIXTURE_IMAGE)
+  await page.waitForSelector('input.app__file-input', { state: 'attached' })
+  await page.locator('input.app__file-input').setInputFiles(FIXTURE_IMAGE)
   await page.waitForSelector('img[alt="Reference picture"]')
 }
 

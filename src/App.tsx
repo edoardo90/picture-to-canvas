@@ -4,6 +4,7 @@ import { PAPER_PRESETS, type PaperSize } from './paperPresets'
 import { mapToCanvas, mapToCanvasFit, computeFitLayout, toImageRelative, clampToImageRelative, type FitLayout } from './coordinateMapping'
 import { loadPointStyle, savePointStyle, type PointStyleSettings } from './pointStyle'
 import { StylePanel } from './StylePanel'
+import UploadEmptyState from './components/UploadEmptyState'
 
 type PlacedPoint = {
   id: string
@@ -72,6 +73,7 @@ function App() {
   const [isStylePanelOpen, setIsStylePanelOpen] = useState(false)
   const [isFitMode, setIsFitMode] = useState(false)
   const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null)
+  const [isDragOverCanvas, setIsDragOverCanvas] = useState(false)
 
   const fitLayout: FitLayout | null =
     isFitMode && naturalSize && paperSize
@@ -87,7 +89,7 @@ function App() {
 
   useEffect(() => {
     return () => {
-      if (imageUrl) {
+      if (imageUrl && imageUrl.startsWith && imageUrl.startsWith('blob:')) {
         URL.revokeObjectURL(imageUrl)
       }
     }
@@ -117,6 +119,20 @@ function App() {
       ro.disconnect()
     }
   }, [imageUrl])
+
+  // Prevent the browser from navigating away when a file is dropped outside
+  // the upload zone (e.g. onto the canvas after an image is already loaded).
+  useEffect(() => {
+    function suppressBrowserDrop(e: DragEvent) {
+      e.preventDefault()
+    }
+    window.addEventListener('dragover', suppressBrowserDrop)
+    window.addEventListener('drop', suppressBrowserDrop)
+    return () => {
+      window.removeEventListener('dragover', suppressBrowserDrop)
+      window.removeEventListener('drop', suppressBrowserDrop)
+    }
+  }, [])
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -197,13 +213,18 @@ function App() {
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
-    if (!file.type.startsWith('image/')) return
+    handleImageSelected(file)
+    event.target.value = ''
+  }
+
+  function handleImageSelected(file: File) {
+    // Basic validation: only JPEG/PNG and <= 10MB
+    if (!(file.type === 'image/png' || file.type === 'image/jpeg')) return
+    if (file.size > 10 * 1024 * 1024) return
     setPoints([])
     setSelectedId(null)
     setDraggingId(null)
-    const url = URL.createObjectURL(file)
-    setImageUrl(url)
-    event.target.value = ''
+    setImageUrl(URL.createObjectURL(file))
   }
 
   function getViewportContentRect() {
@@ -494,7 +515,19 @@ function App() {
         />
       )}
 
-      <div className="app__display-area">
+      <div
+        className={`app__display-area${isDragOverCanvas ? ' app__display-area--dragover' : ''}`}
+        onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOverCanvas(true) }}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOverCanvas(true) }}
+        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOverCanvas(false) }}
+        onDrop={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setIsDragOverCanvas(false)
+          const file = e.dataTransfer?.files?.[0]
+          if (file) handleImageSelected(file)
+        }}
+      >
         {imageUrl ? (
           <>
             <img
@@ -503,6 +536,7 @@ function App() {
               alt="Reference picture"
               className="app__image"
             />
+            {/* Removed explicit "Remove image" button per UX update; image can be replaced by dropping a new file. */}
             {paperSize && (
               <svg
                 className="app__point-overlay"
@@ -594,7 +628,7 @@ function App() {
             )}
           </>
         ) : (
-          <p className="app__empty-state">No image loaded</p>
+          <UploadEmptyState onImageSelected={handleImageSelected} />
         )}
       </div>
     </main>

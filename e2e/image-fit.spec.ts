@@ -4,11 +4,11 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURE_IMAGE = path.join(__dirname, 'fixtures', 'sample.jpg')
-const LANDSCAPE_IMAGE = path.join(__dirname, 'fixtures', 'landscape.bmp')
+const LANDSCAPE_IMAGE = path.join(__dirname, 'fixtures', 'landscape.jpg')
 
 async function loadImage(page: Page) {
   await page.goto('/')
-  const fileInput = page.locator('input[type="file"]')
+  const fileInput = page.locator('input.app__file-input')
   await fileInput.setInputFiles(FIXTURE_IMAGE)
   await page.waitForSelector('img[alt="Reference picture"]')
 }
@@ -105,7 +105,7 @@ test('A5 preset label shows dimensions', async ({ page }) => {
 test('Fit mode shows ↺ badge when paper is rotated (landscape image, portrait paper)', async ({ page }) => {
   // Default paper is 18×26 (portrait). Landscape image (wider than tall) triggers Option B.
   await page.goto('/')
-  const fileInput = page.locator('input[type="file"]')
+  const fileInput = page.locator('input.app__file-input')
   await fileInput.setInputFiles(LANDSCAPE_IMAGE)
   await page.waitForSelector('img[alt="Reference picture"]')
 
@@ -119,7 +119,7 @@ test('Fit mode shows ↺ badge when paper is rotated (landscape image, portrait 
 // Fix 3 / NFR accessibility: ↺ badge has aria-label="paper rotated"
 test('↺ badge has aria-label="paper rotated" when visible', async ({ page }) => {
   await page.goto('/')
-  const fileInput = page.locator('input[type="file"]')
+  const fileInput = page.locator('input.app__file-input')
   await fileInput.setInputFiles(LANDSCAPE_IMAGE)
   await page.waitForSelector('img[alt="Reference picture"]')
 
@@ -132,7 +132,7 @@ test('↺ badge has aria-label="paper rotated" when visible', async ({ page }) =
 // AC-6: swap button is disabled while Fit mode is active
 test('orientation swap button is disabled in Fit mode', async ({ page }) => {
   await page.goto('/')
-  const fileInput = page.locator('input[type="file"]')
+  const fileInput = page.locator('input.app__file-input')
   await fileInput.setInputFiles(LANDSCAPE_IMAGE)
   await page.waitForSelector('img[alt="Reference picture"]')
 
@@ -144,7 +144,7 @@ test('orientation swap button is disabled in Fit mode', async ({ page }) => {
 // AC-6: swap button carries the tooltip text in Fit mode
 test('orientation swap button has title tooltip in Fit mode', async ({ page }) => {
   await page.goto('/')
-  const fileInput = page.locator('input[type="file"]')
+  const fileInput = page.locator('input.app__file-input')
   await fileInput.setInputFiles(LANDSCAPE_IMAGE)
   await page.waitForSelector('img[alt="Reference picture"]')
 
@@ -159,7 +159,7 @@ test('orientation swap button has title tooltip in Fit mode', async ({ page }) =
 // AC-6: swap button is re-enabled when returning to Stretch mode
 test('orientation swap button is re-enabled after switching back to Stretch mode', async ({ page }) => {
   await page.goto('/')
-  const fileInput = page.locator('input[type="file"]')
+  const fileInput = page.locator('input.app__file-input')
   await fileInput.setInputFiles(LANDSCAPE_IMAGE)
   await page.waitForSelector('img[alt="Reference picture"]')
 

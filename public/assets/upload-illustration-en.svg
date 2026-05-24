@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="520" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Illustration: drag or upload image</title>
+  <desc id="desc">Dashed panel with image icon and text: drag here or click to upload</desc>
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0" stop-color="#f6f8ff"/>
+      <stop offset="1" stop-color="#eef6ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#g)" rx="24"/>
+
+  <!-- dashed upload area -->
+  <rect x="80" y="60" width="640" height="360" rx="16" fill="#fff" stroke="#9aa7d6" stroke-width="3" stroke-dasharray="12 8"/>
+
+  <!-- picture icon -->
+  <g transform="translate(260,150) scale(1.2)">
+    <rect x="0" y="0" width="160" height="110" rx="8" fill="#f2f6ff" stroke="#7c8ed6" stroke-width="3"/>
+    <circle cx="36" cy="34" r="14" fill="#7c8ed6"/>
+    <path d="M10 92 L66 44 L132 92" fill="#7c8ed6"/>
+  </g>
+
+  <!-- cloud arrow -->
+  <g transform="translate(460,120)">
+    <path d="M64 14c-6.6 0-12.6 2.8-16.8 7.2C43 19 37 16 30 16 18 16 8.4 24 6 35c-12 1.8-21 12-21 24 0 13 10 23 23 23h56V64h8v-8h8c11 0 20-9 20-20 0-11-9-20-20-20-2.9 0-5.6.6-8.1 1.7C81.4 20 73 14 64 14z" fill="#7c8ed6"/>
+    <path d="M48 46v20h-8v8h8v12h8v-12h8v-8h-8V46h-8z" fill="#fff"/>
+  </g>
+
+  <!-- headline -->
+  <text x="400" y="460" font-family="Inter, Arial, sans-serif" font-size="20" text-anchor="middle" fill="#23304a">Drag an image here or click "Load picture" button to upload</text>
+
+  <!-- subtext -->
+  <text x="400" y="486" font-family="Inter, Arial, sans-serif" font-size="14" text-anchor="middle" fill="#4b556b">Supported: JPG, PNG — max size 10 MB</text>
+</svg>

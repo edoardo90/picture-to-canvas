@@ -25,6 +25,68 @@
   pointer-events: none;
 }
 
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Empty-state upload */
+.upload-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #9aa;
+  text-align: center;
+  padding: 1rem;
+  width: 80%;
+  max-width: 720px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.upload-empty-state:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 6px;
+}
+
+.upload-empty-state--dragover {
+  box-shadow: 0 0 0 4px rgba(77, 166, 255, 0.16), 0 8px 24px rgba(0,0,0,0.4);
+  transform: scale(1.01);
+}
+
+.upload-empty-state__illustration {
+  width: 280px;
+  max-width: 40vw;
+  height: auto;
+}
+
+.upload-empty-state__headline { font-size: 1.125rem; color: #e8e8e8 }
+.upload-empty-state__hint { font-size: 0.95rem; color: #aab }
+.upload-empty-state__status { min-height: 1.2rem; color: #f88 }
+
+.app__remove-button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  background: transparent;
+  color: #f66;
+  border: 1px solid #533;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.app__remove-button:hover { background: rgba(255,0,0,0.06) }
+
 .app__display-area {
   flex: 1;
   display: flex;
@@ -32,6 +94,11 @@
   justify-content: center;
   overflow: hidden;
   position: relative;
+  transition: box-shadow 0.15s ease;
+}
+
+.app__display-area--dragover {
+  box-shadow: inset 0 0 0 3px rgba(77, 166, 255, 0.6);
 }
 
 .app__image {

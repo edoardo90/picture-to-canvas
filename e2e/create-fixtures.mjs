@@ -89,4 +89,17 @@ const portrait = [
 ]
 writeFileSync(join(__dirname, 'fixtures', 'portrait.bmp'), Buffer.from(portrait))
 
-console.log('fixtures created: sample.jpg, landscape.bmp, portrait.bmp')
+// Landscape JPEG (4×2): same scan data as sample.jpg — 4×2 fits in 1 MCU block
+// SOF0 is at index 89 (FF C0); height at 94-95, width at 96-97
+const landscapeBytes = [...bytes]
+landscapeBytes[94] = 0x00; landscapeBytes[95] = 0x02 // height = 2
+landscapeBytes[96] = 0x00; landscapeBytes[97] = 0x04 // width = 4
+writeFileSync(join(__dirname, 'fixtures', 'landscape.jpg'), Buffer.from(landscapeBytes))
+
+// Portrait JPEG (2×4): same approach
+const portraitBytes = [...bytes]
+portraitBytes[94] = 0x00; portraitBytes[95] = 0x04 // height = 4
+portraitBytes[96] = 0x00; portraitBytes[97] = 0x02 // width = 2
+writeFileSync(join(__dirname, 'fixtures', 'portrait.jpg'), Buffer.from(portraitBytes))
+
+console.log('fixtures created: sample.jpg, landscape.bmp, portrait.bmp, landscape.jpg, portrait.jpg')

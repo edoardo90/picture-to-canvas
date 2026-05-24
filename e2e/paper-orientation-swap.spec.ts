@@ -3,12 +3,12 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const LANDSCAPE = path.join(__dirname, 'fixtures', 'landscape.bmp') // 4×2 px
-const PORTRAIT  = path.join(__dirname, 'fixtures', 'portrait.bmp')  // 2×4 px
+const LANDSCAPE = path.join(__dirname, 'fixtures', 'landscape.jpg') // 4×2 px
+const PORTRAIT  = path.join(__dirname, 'fixtures', 'portrait.jpg')  // 2×4 px
 
 async function loadImage(page: Page, fixturePath: string) {
   await page.goto('/')
-  await page.locator('input[type="file"]').setInputFiles(fixturePath)
+  await page.locator('input.app__file-input').setInputFiles(fixturePath)
   await page.waitForSelector('img[alt="Reference picture"]')
 }
 
