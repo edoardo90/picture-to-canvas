@@ -245,7 +245,14 @@ function App() {
     const value = event.target.value
     setSelectedSizeId(value)
     if (value === 'custom') {
-      setPaperSize(buildCustomPaperSize(customWidth, customHeight))
+      // Prefill custom inputs with the currently selected paper size so users
+      // get sensible defaults (e.g., selecting A4 then Custom fills 21 and 29.7).
+      const current = paperSize ?? PAPER_PRESETS.find(p => p.id === selectedSizeId) ?? PAPER_PRESETS[0]
+      const wStr = current ? String(current.widthCm) : ''
+      const hStr = current ? String(current.heightCm) : ''
+      setCustomWidth(wStr)
+      setCustomHeight(hStr)
+      setPaperSize(buildCustomPaperSize(wStr, hStr))
     } else {
       const preset = PAPER_PRESETS.find(p => p.id === value) ?? null
       setPaperSize(preset)
