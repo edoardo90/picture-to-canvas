@@ -475,16 +475,48 @@ function App() {
                 </span>
               )}
 
-              <button
-                type="button"
-                className={`app__fit-toggle${isFitMode ? ' app__fit-toggle--active' : ''}`}
-                aria-label="Fit mode"
-                aria-pressed={isFitMode}
-                disabled={!imageUrl}
-                onClick={() => setIsFitMode(prev => !prev)}
-              >
-                {isFitMode ? 'Fit' : 'Stretch'}&nbsp;<span className="app__shortcut-hint" aria-hidden="true">F</span>
-              </button>
+              <div className="app__segmented-control" role="tablist" aria-label="Mapping mode">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-pressed={isFitMode}
+                  className={`app__segment${isFitMode ? ' app__segment--active' : ''}`}
+                  disabled={!imageUrl}
+                  onClick={() => setIsFitMode(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowRight') setIsFitMode(false)
+                    if (e.key === 'ArrowLeft') setIsFitMode(true)
+                  }}
+                >
+                  <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden="true" focusable="false">
+                    <rect x="0.5" y="0.5" width="27" height="19" rx="2" fill="none" stroke="currentColor" strokeWidth="1" />
+                    <rect x="8" y="5" width="12" height="10" rx="1" fill="currentColor" />
+                  </svg>
+                  <span className="app__segment-label">Fit</span>
+                  <span className="app__segment-sub">Preserve proportions</span>
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-pressed={!isFitMode}
+                  className={`app__segment${!isFitMode ? ' app__segment--active' : ''}`}
+                  disabled={!imageUrl}
+                  onClick={() => setIsFitMode(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowLeft') setIsFitMode(true)
+                    if (e.key === 'ArrowRight') setIsFitMode(false)
+                  }}
+                >
+                  <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden="true" focusable="false">
+                    <rect x="0.5" y="0.5" width="27" height="19" rx="2" fill="none" stroke="currentColor" strokeWidth="1" />
+                    <rect x="0.5" y="0.5" width="27" height="19" rx="2" fill="currentColor" opacity="0.9" />
+                    <path d="M4 3 L24 17 M24 3 L4 17" stroke="rgba(0,0,0,0.12)" strokeWidth="1" />
+                  </svg>
+                  <span className="app__segment-label">Stretch</span>
+                  <span className="app__segment-sub">Fill paper (may distort)</span>
+                </button>
+              </div>
 
 
 
