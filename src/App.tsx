@@ -286,9 +286,7 @@ function App() {
   }
 
   function handleImageSelected(file: File) {
-    // Basic validation: only JPEG/PNG and <= 10MB
-    if (!(file.type === 'image/png' || file.type === 'image/jpeg')) return
-    if (file.size > 10 * 1024 * 1024) return
+    if (!file.type.startsWith('image/')) return
     setPoints([])
     setSelectedId(null)
     setDraggingId(null)

@@ -5,8 +5,6 @@ type Props = {
   lang?: string
 }
 
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png']
-const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 
 export function UploadEmptyState({ onImageSelected, lang }: Props) {
   const [dragOver, setDragOver] = useState(false)
@@ -19,8 +17,6 @@ export function UploadEmptyState({ onImageSelected, lang }: Props) {
     headline: isEnglish ? 'Upload an image' : "Carica un'immagine",
     hint: isEnglish ? 'Click to choose a file or drag an image here' : 'Clicca per scegliere un file o trascina un\'immagine qui',
     dropHint: isEnglish ? 'Drop to upload' : 'Rilascia per caricare',
-    errorType: isEnglish ? 'Unsupported file type. Please use JPG or PNG.' : 'Tipo di file non supportato. Usa JPG o PNG.',
-    errorSize: isEnglish ? 'File is too large. Maximum size: 10 MB.' : 'File troppo grande. Dimensione massima: 10 MB.',
     success: isEnglish ? 'Image uploaded successfully.' : 'Immagine caricata con successo.',
     ariaLabel: isEnglish ? 'Upload image' : "Carica un'immagine",
   }
@@ -29,12 +25,8 @@ export function UploadEmptyState({ onImageSelected, lang }: Props) {
     (files?: FileList | null) => {
       if (!files || files.length === 0) return
       const file = files[0]
-      if (!ACCEPTED_TYPES.includes(file.type)) {
-        setMessage(texts.errorType)
-        return
-      }
-      if (file.size > MAX_BYTES) {
-        setMessage(texts.errorSize)
+      if (!file.type.startsWith('image/')) {
+        setMessage(isEnglish ? 'Please select an image file.' : 'Seleziona un file immagine.')
         return
       }
       setMessage(texts.success)
@@ -95,7 +87,7 @@ export function UploadEmptyState({ onImageSelected, lang }: Props) {
 
       <input
         type="file"
-        accept="image/png,image/jpeg"
+        accept="image/*"
         className="sr-only"
         aria-label={texts.ariaLabel}
         onChange={handleInputChange}
