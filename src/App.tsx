@@ -19,6 +19,13 @@ type ContentLayout = {
   height: number
 }
 
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    try { return crypto.randomUUID() } catch { /* insecure context */ }
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`
+}
+
 const MIN_TOOLBAR_HEIGHT = 36 // px — minimum readable size before collapse
 
 function computeContentLayout(img: HTMLImageElement): ContentLayout | null {
@@ -320,7 +327,7 @@ function App() {
     if (!coords) return
     setPoints(prev => [
       ...prev,
-      { id: crypto.randomUUID(), relX: coords.relX, relY: coords.relY },
+      { id: generateId(), relX: coords.relX, relY: coords.relY },
     ])
   }
 
