@@ -484,12 +484,13 @@
   .app__style-button { display: none !important; visibility: hidden !important; }
 }
 
-/* Extra compact rules for very small devices (e.g. iPhone SE, Surface Duo small widths) */
+/* Extra compact rules for very small devices (e.g. iPhone SE) */
 @media (max-width: 360px) {
-  .app__toolbar-left-group { gap: 0.4rem }
-  .app__segment { padding: 4px 6px; font-size: 0.82rem }
-  .app__segment-label { display: none }
+  .app__toolbar-left-group { gap: 0.3rem }
+  .app__segment { padding: 6px 0; font-size: 0.8rem }
+  .app__segment-label { display: inline-block }
   .app__segment-sub { display: none }
+  .app__segment svg { display: none }
   .app__load-button { padding: 8px; font-size: 0.9rem; min-width: 0 }
   .app__load-button { width: 100%; }
   .app__paper-size-label { display: none }
@@ -509,17 +510,56 @@
   }
 }
 
-/* Aggressive compaction for narrow-width devices (e.g., Surface Duo portrait/dual-pane) */
+/* Two-row layout for phones (iPhone 15 = 390px, iPhone 14 Pro Max = 430px, etc.) */
 @media (max-width: 580px) {
-  .app__toolbar-left-group { gap: 0.3rem }
-  .app__segment { padding: 4px 6px; font-size: 0.78rem }
-  .app__segment-label { display: none }
-  .app__segment-sub { display: none }
-  .app__segment svg { width: 16px; height: 12px }
-  .app__load-button { padding: 6px 8px; font-size: 0.86rem; min-width: 0; min-height: 36px }
-  .app__load-button { width: auto }
-  .app__paper-size-select { padding: 4px 6px; font-size: 0.84rem; min-width: 56px }
+  .app__toolbar-content {
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 6px 8px;
+    gap: 0;
+  }
+  .app__toolbar-left-group {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .app__toolbar-right-group {
+    flex: 0 0 auto;
+    align-self: flex-start;
+  }
+  /* Row 1: Load button + paper size select */
+  .app__load-button {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    min-width: 0;
+    min-height: 36px;
+    width: auto;
+  }
+  .app__paper-size-select {
+    flex: 1 1 0%;
+    padding: 4px 6px;
+    font-size: 0.9rem;
+    min-width: 0;
+  }
   .app__paper-size-label { display: none }
+  /* Row 2: Fit | Stretch segmented control — full width */
+  .app__segmented-control {
+    flex: 0 0 100%;
+    width: 100%;
+    gap: 0;
+    margin-top: 2px;
+  }
+  .app__segment {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 0;
+    font-size: 0.9rem;
+  }
+  .app__segment-label { display: inline-block }
+  .app__segment-sub { display: none }
+  .app__segment svg { display: none }
   .app__custom-size-inputs { gap: 6px }
 }
 
